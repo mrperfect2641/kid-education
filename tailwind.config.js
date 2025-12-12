@@ -33,11 +33,16 @@ export default {
                 foreground: 'hsl(var(--foreground))',
                 primary: {
                     DEFAULT: 'hsl(var(--primary))',
-                    foreground: 'hsl(var(--primary-foreground))'
+                    foreground: 'hsl(var(--primary-foreground))',
+                    glow: 'hsl(var(--primary-glow))'
                 },
                 secondary: {
                     DEFAULT: 'hsl(var(--secondary))',
                     foreground: 'hsl(var(--secondary-foreground))'
+                },
+                success: {
+                    DEFAULT: 'hsl(var(--success))',
+                    foreground: 'hsl(var(--success-foreground))'
                 },
                 destructive: {
                     DEFAULT: 'hsl(var(--destructive))',
@@ -59,13 +64,6 @@ export default {
                     DEFAULT: 'hsl(var(--card))',
                     foreground: 'hsl(var(--card-foreground))'
                 },
-                education: {
-                    blue: 'hsl(var(--education-blue))',
-                    green: 'hsl(var(--education-green))'
-                },
-                success: 'hsl(var(--success))',
-                warning: 'hsl(var(--warning))',
-                info: 'hsl(var(--info))',
                 sidebar: {
                     DEFAULT: 'hsl(var(--sidebar-background))',
                     foreground: 'hsl(var(--sidebar-foreground))',
@@ -91,12 +89,11 @@ export default {
             },
             backgroundImage: {
                 'gradient-primary': 'var(--gradient-primary)',
-                'gradient-card': 'var(--gradient-card)',
-                'gradient-background': 'var(--gradient-background)'
+                'gradient-success': 'var(--gradient-success)'
             },
             boxShadow: {
-                card: 'var(--shadow-card)',
-                hover: 'var(--shadow-hover)'
+                elegant: 'var(--shadow-elegant)',
+                glow: 'var(--shadow-glow)'
             },
             keyframes: {
                 'accordion-down': {

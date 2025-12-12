@@ -1,51 +1,227 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import routes from "../../routes";
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from '@/db/supabase';
+import { profilesApi } from '@/db/api';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Leaf, Menu, LogOut, User, Trophy, BookOpen, Gamepad2, Award, Upload, LayoutDashboard } from 'lucide-react';
+import { toast } from 'sonner';
+import type { Profile } from '@/types/types';
 
-const Header: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+export default function Header() {
   const location = useLocation();
-  const navigation = routes.filter((route) => route.visible !== false);
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  return (
-    <header className="bg-white shadow-md sticky top-0 z-10">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              {/* Please replace with your website logo */}
-              <img
-                className="h-8 w-auto"
-                src={`https://miaoda-site-img.cdn.bcebos.com/placeholder/code_logo_default.png`}
-                alt="Website logo"
-              />
-              {/* Please replace with your website name */}
-              <span className="ml-2 text-xl font-bold text-blue-600">
-                Website Name
-              </span>
-            </Link>
-          </div>
+  useEffect(() => {
+    loadProfile();
 
-          {/* When there's only one page, you can remove the entire navigation section */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`px-3 py-2 text-base font-medium rounded-md ${
-                  location.pathname === item.path
-                    ? "text-blue-600 bg-blue-50"
-                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
-                } transition duration-300`}
-              >
-                {item.name}
-              </Link>
-            ))}
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        loadProfile();
+      } else if (event === 'SIGNED_OUT') {
+        setProfile(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await profilesApi.getCurrentUser();
+      setProfile(data);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Logged out successfully');
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Failed to logout');
+    }
+  };
+
+  const getNavItems = () => {
+    if (!profile) return [];
+
+    const commonItems = [
+      { name: 'Home', path: '/', icon: LayoutDashboard },
+      { name: 'Learn', path: '/learn', icon: BookOpen },
+      { name: 'Quizzes', path: '/quizzes', icon: Award },
+      { name: 'Challenges', path: '/challenges', icon: Gamepad2 },
+      { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
+    ];
+
+    if (profile.role === 'student') {
+      return [
+        ...commonItems,
+        { name: 'My Progress', path: '/progress', icon: User },
+        { name: 'Eco Actions', path: '/eco-actions', icon: Upload },
+      ];
+    }
+
+    if (profile.role === 'teacher') {
+      return [
+        ...commonItems,
+        { name: 'Teacher Dashboard', path: '/teacher', icon: LayoutDashboard },
+      ];
+    }
+
+    if (profile.role === 'admin') {
+      return [
+        ...commonItems,
+        { name: 'Admin Dashboard', path: '/admin', icon: LayoutDashboard },
+      ];
+    }
+
+    return commonItems;
+  };
+
+  const navItems = getNavItems();
+
+  const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
+    <>
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        const isActive = location.pathname === item.path;
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            onClick={() => mobile && setIsMenuOpen(false)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-smooth ${
+              isActive
+                ? 'bg-primary text-primary-foreground'
+                : 'text-foreground hover:bg-accent'
+            } ${mobile ? 'w-full' : ''}`}
+          >
+            <Icon className="w-4 h-4" />
+            <span className={mobile ? 'text-base' : 'text-sm font-medium'}>{item.name}</span>
+          </Link>
+        );
+      })}
+    </>
+  );
+
+  if (loading) {
+    return (
+      <header className="border-b bg-card sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Leaf className="w-6 h-6 text-primary" />
+            <span className="text-lg font-bold gradient-text">EcoLearn</span>
           </div>
         </div>
-      </nav>
+      </header>
+    );
+  }
+
+  return (
+    <header className="border-b bg-card sticky top-0 z-50 shadow-sm">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Leaf className="w-6 h-6 text-primary" />
+            </div>
+            <span className="text-xl font-bold gradient-text hidden sm:inline">EcoLearn</span>
+          </Link>
+
+          {profile && (
+            <nav className="hidden xl:flex items-center gap-2">
+              <NavLinks />
+            </nav>
+          )}
+        </div>
+
+        <div className="flex items-center gap-4">
+          {profile ? (
+            <>
+              <div className="hidden md:flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium">{profile.full_name || profile.username}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{profile.role}</p>
+                </div>
+                <Avatar>
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {(profile.full_name || profile.username).charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="hidden md:flex"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+
+              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="xl:hidden">
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-72">
+                  <div className="flex flex-col gap-6 mt-8">
+                    <div className="flex items-center gap-3 pb-4 border-b">
+                      <Avatar>
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {(profile.full_name || profile.username).charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{profile.full_name || profile.username}</p>
+                        <p className="text-sm text-muted-foreground capitalize">{profile.role}</p>
+                        <p className="text-xs text-primary font-medium">{profile.total_points} points</p>
+                      </div>
+                    </div>
+
+                    <nav className="flex flex-col gap-2">
+                      <NavLinks mobile />
+                    </nav>
+
+                    <Button
+                      variant="outline"
+                      onClick={handleLogout}
+                      className="w-full mt-auto"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" asChild>
+                <Link to="/login">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/register">Register</Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
     </header>
   );
-};
+}
 
-export default Header;
