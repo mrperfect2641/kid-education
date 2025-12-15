@@ -6,16 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Leaf, Loader2 } from 'lucide-react';
-import type { UserRole } from '@/types/types';
 
 export default function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -45,18 +42,19 @@ export default function Login() {
       if (data.user) {
         const profile = await profilesApi.getProfile(data.user.id);
         
-        if (profile && profile.role !== selectedRole) {
-          toast.error(`This account is registered as ${profile.role}. Please select the correct role.`);
+        if (!profile) {
+          toast.error('Profile not found. Please contact administrator.');
           await supabase.auth.signOut();
           setLoading(false);
           return;
         }
 
-        toast.success('Login successful!');
+        toast.success(`Welcome back, ${profile.username}!`);
         
-        if (selectedRole === 'admin') {
+        // Route based on the user's registered role
+        if (profile.role === 'admin') {
           navigate('/admin');
-        } else if (selectedRole === 'teacher') {
+        } else if (profile.role === 'teacher') {
           navigate('/teacher');
         } else {
           navigate('/');
@@ -109,19 +107,6 @@ export default function Login() {
                 disabled={loading}
                 required
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Login As</Label>
-              <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)} disabled={loading}>
-                <SelectTrigger id="role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="teacher">Teacher</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
