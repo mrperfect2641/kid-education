@@ -8,19 +8,22 @@ A web-based learning system that combines environmental education with gamificat
 ## 3. Website Functionalities
 
 ### 3.1 Module1: User Registration and Login
-- Students, teachers, and admins can register with role selection (Student/Teacher/Admin)
+- Users can register by selecting their role (Student/Teacher/Admin) during registration
 - Registration requires email ID (used as username), password, and role selection
-- Secure login system with email and password authentication
-- Role-based login: users select their role before logging in
-- Separate dashboards for students, teachers, and admins based on selected role
+- Role-based registration: system creates user account according to selected role (Student/Teacher/Admin)
+- Secure login system with email, password, and role selection
+- Role-based login: users must select their role before logging in
+- System authenticates and redirects users to role-specific dashboards:\n  - Student login → Student Dashboard
+  - Teacher login → Teacher Dashboard
+  - Admin login → Admin Dashboard
+- Secure password storage and session management
 
 ### 3.2 Module 2: Learning / Quiz Module
 - Display educational lessons on environmental topics: pollution, recycling, climate change, renewable energy, etc.
 - Interactive quizzes with multiple-choice questions (MCQs), puzzles\n- Students earn eco-points for correct answers
 - Track quiz completion and scores
 - Student dashboard includes3-4 fully functional quizzes with questions ready to play
-
-### 3.3 Module 3: Game / Challenge Module
+\n### 3.3 Module 3: Game / Challenge Module
 - Fun mini-tasks and challenges:'Sort the waste,' 'Save the trees,' 'Clean the ocean'\n- Fully working interactive games using HTML and JavaScript
 - Games are added and managed by teachers
 - Progress tracking for each game/challenge
@@ -32,13 +35,16 @@ A web-based learning system that combines environmental education with gamificat
 - Encourage healthy competition among students
 - View personal ranking and achievements
 \n### 3.5 Module 5: Teacher Dashboard
-- Monitor student activity, scores, and progress
-- Create, edit, and manage quizzes and games
-- Add/edit quizzes and lessons
+- Add and edit information in learning modules
+- Create, edit, and manage quizzes and games for students
+- Add new quizzes and lessons
+- Edit existing quizzes and games
 - Conduct games and quizzes for students
-- View results of students' games and quizzes
-- Review and approve eco-activities submitted by students
-- Generate performance reports\n- No option to play games or take quizzes (teacher role is for management and evaluation only)
+- View class leaderboard of students
+- Generate performance reports and results of students
+- View and approve eco-actions submitted by students
+- Monitor student activity, scores, and progress
+- No option to play games or take quizzes (teacher role is for management and evaluation only)
 
 ### 3.6 Module 6: Real-Life Action Tracker
 - Students log real-world environmental activities (planting trees, using reusable bottles, etc.)
@@ -48,88 +54,99 @@ A web-based learning system that combines environmental education with gamificat
 - Encourage real environmental action beyond digital learning
 
 ### 3.7 Admin Dashboard
-- Manage user accounts (students, teachers, admins)
+- Manage user accounts, specifically student accounts
+- Maintain database integrity\n- Generate reports of students' performance and activities
+- View system reports and feedback
 - Maintain and update content, quizzes, and lessons
-- Generate reports of students' performance and activities
-- Handle reports and feedback\n- Maintain database integrity
 - Manage class leaderboards
-- No option to play quizzes, games, view leaderboard, or access learning modules (admin role is for system management only)
+- Approve real-life eco-actions submitted by students
+- No option to play quizzes, games, view leaderboard as a participant, or access learning modules as a student (admin role is for system management only)
 
 ## 4. User Roles and Interactions
 
-### 4.1 Student\n- Register and login with email ID and student role
+### 4.1 Student\n- Register with email ID and select Student role
+- Login with email, password, and Student role selection → redirected to Student Dashboard
 - Take quizzes and earn eco-points (3-4 quizzes available with questions)\n- Play fully functional games and complete challenges
 - View leaderboard and personal ranking
 - Submit real-life eco-actions for verification
 - Track progress and view earned badges
 - View learning modules\n
 ### 4.2 Teacher
-- Register and login with email ID and teacher role
+- Register with email ID and select Teacher role
+- Login with email, password, and Teacher role selection → redirected to Teacher Dashboard
+- Add and edit information in learning modules
 - Create, edit, and manage quizzes, games, and lessons
 - Conduct games and quizzes for students
-- View student performance, quiz results, and game results
-- Approve or reject real-life eco-actions submitted by students
-- Evaluate student performance\n- Manage class leaderboard
-- Generate student reports
-
-### 4.3 Admin
-- Register and login with email ID and admin role
-- Manage all user accounts (students, teachers, admins)
-- Maintain content, quizzes, and lessons\n- Generate reports of students' performance and activities
-- Handle system reports and feedback
+- View class leaderboard of students
+- Generate results and performance reports of students
+- View and approve eco-actions submitted by students
+- Monitor student performance, quiz results, and game results
+- No access to play games or take quizzes\n\n### 4.3 Admin
+- Register with email ID and select Admin role
+- Login with email, password, and Admin role selection → redirected to Admin Dashboard
+- Manage student user accounts
 - Maintain database integrity
-- Approve real-life eco-actions
-- Validate submitted activities
-\n### 4.4 External Verifier (Optional)
+- Generate reports of students' performance and activities
+- Handle system reports and feedback
+- Maintain and update content, quizzes, and lessons
+- Manage class leaderboards
+- Approve real-life eco-actions\n- No option to play quizzes, games, view leaderboard as a participant, or access learning modules as a student\n
+### 4.4 External Verifier (Optional)
 - Validate real-life eco-actions submitted by students
 - Provide additional verification layer for eco-activities
 \n## 5. User Interfaces
 
 ### 5.1 Login / Registration Page
-- User authentication for students, teachers, and admins
-- Role selection dropdown (Student/Teacher/Admin) on registration
+- Role selection dropdown (Student/Teacher/Admin) on registration page
 - Email ID field (used as username)
 - Password field
-- Role selection before login
-\n### 5.2 Home / Dashboard\n- Overview of platform features\n- Eco-points summary
-- Quick access to quizzes, games, and leaderboard
-- Role-specific dashboard content
+- Role selection dropdown before login
+- System creates account based on selected role during registration
+- System redirects to appropriate dashboard based on role selected during login
 
-### 5.3 Quiz Page
+### 5.2 Student Dashboard
+- Overview of platform features\n- Eco-points summary
+- Quick access to quizzes, games, and leaderboard
+- View learning modules
+- Submit eco-actions
+- Track personal progress and badges
+\n### 5.3 Teacher Dashboard
+- Add and edit learning module information
+- Create, edit, and manage quizzes and games\n- View class leaderboard
+- Generate student results and performance reports
+- View eco-actions submitted by students
+- Approve or reject eco-actions
+- Monitor student activity and progress
+
+### 5.4 Admin Dashboard
+- Manage student user accounts
+- Maintain database integrity tools
+- Generate reports of students' performance and activities
+- View system reports and feedback
+- Maintain content, quizzes, and lessons\n- Manage class leaderboards
+- Approve eco-actions
+\n### 5.5 Quiz Page
 - Display environmental quiz questions
-- Multiple-choice options\n- Submit answers and view results
+- Multiple-choice options
+- Submit answers and view results
 - Eco-points earned display
 - Student dashboard includes 3-4 quizzes with questions ready to play
 
-### 5.4 Game / Challenge Page
+### 5.6 Game / Challenge Page
 - Fully functional interactive learning games and missions
 - Challenge instructions and objectives
 - Progress tracking\n- Badge awards upon completion
 - Games managed by teachers
-
-### 5.5 Leaderboard Page
+\n### 5.7 Leaderboard Page
 - Display top students ranked by eco-points
 - Personal ranking display
-- Filter by class or overall\n\n### 5.6 Teacher Dashboard
-- Create, edit, and manage quizzes, games, and lessons
-- Conduct games and quizzes for students
-- View student performance reports, quiz results, and game results
-- Approve eco-actions\n- Add/edit educational content
-- No option to play games or take quizzes\n
-### 5.7 Admin Dashboard
-- Manage users and accounts
-- Maintain content and quizzes
-- Generate reports of students' performance and activities
-- View system reports\n- Database management tools
-- No option to play quizzes, games, view leaderboard, or access learning modules
-
-### 5.8 Activity Submission Page
+- Filter by class or overall\n\n### 5.8 Activity Submission Page
 - Students upload real-life eco-actions
 - Image upload and description fields
 - Submission history and status tracking
 \n### 5.9 About / Help Page
 - Explanation of project purpose
-- Usage instructions for students and teachers
+- Usage instructions for students, teachers, and admins
 - Contact information
 
 ## 6. Technical Requirements
@@ -140,17 +157,17 @@ A web-based learning system that combines environmental education with gamificat
 - Python with Flask framework
 - RESTful API design
 - Session management and authentication
+- Role-based access control and dashboard routing
 
 ### 6.3 Database
-- MySQL database\n- Tables for users (with email as username), quizzes, games, eco-points, badges, activities, leaderboard\n- Secure database connection
-
+- MySQL database\n- Tables for users (with email as username and role field), quizzes, games, eco-points, badges, activities, leaderboard\n- Secure database connection\n
 ### 6.4 Authentication
 - Email and password-based authentication
 - Role-based access control (Student/Teacher/Admin)
+- Role-based dashboard redirection upon login
 - Secure password storage
 
-## 7. Design Style
-- Primary color scheme: Lavender theme with complementary soft purples, whites, and light greens to reflect environmental focus
+## 7. Design Style\n- Primary color scheme: Lavender theme with complementary soft purples, whites, and light greens to reflect environmental focus
 - Visual details: Rounded corners for cards and buttons, subtle shadows for depth, nature-inspired icons (leaves, trees, water drops)
 - Layout: Card-based layout for quizzes and games, clean list view for leaderboards, grid layout for dashboard widgets
 - Typography: Clean, readable fonts suitable for educational content
