@@ -6,6 +6,9 @@ import Learn from './pages/Learn';
 import Quizzes from './pages/Quizzes';
 import QuizTake from './pages/QuizTake';
 import Challenges from './pages/Challenges';
+import SortWasteGame from './pages/games/SortWasteGame';
+import SaveTreesGame from './pages/games/SaveTreesGame';
+import CleanOceanGame from './pages/games/CleanOceanGame';
 import Leaderboard from './pages/Leaderboard';
 import EcoActions from './pages/EcoActions';
 import TeacherDashboard from './pages/TeacherDashboard';
@@ -60,6 +63,24 @@ const routes: RouteConfig[] = [
     name: 'Challenges',
     path: '/challenges',
     element: <Challenges />,
+    visible: false,
+  },
+  {
+    name: 'Sort Waste Game',
+    path: '/game/sort-waste',
+    element: <SortWasteGame />,
+    visible: false,
+  },
+  {
+    name: 'Save Trees Game',
+    path: '/game/save-trees',
+    element: <SaveTreesGame />,
+    visible: false,
+  },
+  {
+    name: 'Clean Ocean Game',
+    path: '/game/clean-ocean',
+    element: <CleanOceanGame />,
     visible: false,
   },
   {

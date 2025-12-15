@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
-import { profilesApi, ecoActionsApi } from '@/db/api';
+import { profilesApi, ecoActionsApi, quizAttemptsApi, challengeProgressApi } from '@/db/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Upload, Award, BookOpen } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Users, Upload, Award, FileText, TrendingUp, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Profile, EcoActionWithDetails, UserRole } from '@/types/types';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<Profile[]>([]);
   const [pendingActions, setPendingActions] = useState<EcoActionWithDetails[]>([]);
+  const [quizAttempts, setQuizAttempts] = useState<any[]>([]);
+  const [gameProgress, setGameProgress] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,12 +23,16 @@ export default function AdminDashboard() {
 
   const loadData = async () => {
     try {
-      const [usersData, actionsData] = await Promise.all([
+      const [usersData, actionsData, attemptsData, progressData] = await Promise.all([
         profilesApi.getAllProfiles(),
         ecoActionsApi.getPendingActions(),
+        quizAttemptsApi.getAllAttempts(),
+        challengeProgressApi.getAllProgress(),
       ]);
       setUsers(usersData);
       setPendingActions(actionsData);
+      setQuizAttempts(attemptsData);
+      setGameProgress(progressData);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -58,6 +65,55 @@ export default function AdminDashboard() {
     }
   };
 
+  const generateReport = () => {
+    const totalUsers = users.length;
+    const students = users.filter(u => u.role === 'student').length;
+    const teachers = users.filter(u => u.role === 'teacher').length;
+    const admins = users.filter(u => u.role === 'admin').length;
+    const totalPoints = users.reduce((sum, u) => sum + u.total_points, 0);
+    const avgPoints = totalUsers > 0 ? (totalPoints / totalUsers).toFixed(2) : 0;
+    const totalQuizAttempts = quizAttempts.length;
+    const totalGamesPlayed = gameProgress.length;
+    const completedGames = gameProgress.filter(g => g.completed).length;
+
+    const report = `
+=== ENVIRONMENTAL EDUCATION PLATFORM REPORT ===
+Generated: ${new Date().toLocaleString()}
+
+USER STATISTICS:
+- Total Users: ${totalUsers}
+- Students: ${students}
+- Teachers: ${teachers}
+- Admins: ${admins}
+
+ENGAGEMENT METRICS:
+- Total Eco-Points Earned: ${totalPoints}
+- Average Points per User: ${avgPoints}
+- Total Quiz Attempts: ${totalQuizAttempts}
+- Total Games Played: ${totalGamesPlayed}
+- Games Completed: ${completedGames}
+- Pending Eco-Actions: ${pendingActions.length}
+
+TOP PERFORMERS:
+${users
+  .sort((a, b) => b.total_points - a.total_points)
+  .slice(0, 5)
+  .map((u, i) => `${i + 1}. ${u.username} - ${u.total_points} points`)
+  .join('\n')}
+
+=== END OF REPORT ===
+    `;
+
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `platform-report-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Report generated successfully!');
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-6">
@@ -78,11 +134,21 @@ export default function AdminDashboard() {
     );
   }
 
+  const totalPoints = users.reduce((sum, u) => sum + u.total_points, 0);
+  const students = users.filter(u => u.role === 'student');
+  const teachers = users.filter(u => u.role === 'teacher');
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Manage users and review eco-actions</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage users and generate reports</p>
+        </div>
+        <Button onClick={generateReport}>
+          <FileText className="w-4 h-4 mr-2" />
+          Generate Report
+        </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-4">
@@ -93,6 +159,9 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {students.length} students, {teachers.length} teachers
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -102,6 +171,27 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingActions.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Eco-actions awaiting approval</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Points</CardTitle>
+            <Award className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalPoints}</div>
+            <p className="text-xs text-muted-foreground mt-1">Across all users</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Activity</CardTitle>
+            <Activity className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{quizAttempts.length + gameProgress.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Total engagements</p>
           </CardContent>
         </Card>
       </div>
@@ -109,35 +199,47 @@ export default function AdminDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
-          <CardDescription>Manage user roles and permissions</CardDescription>
+          <CardDescription>Manage user accounts and assign roles</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {users.map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <p className="font-medium">{user.full_name || user.username}</p>
-                  <p className="text-sm text-muted-foreground">{user.username}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge className="capitalize">{user.role}</Badge>
-                  <Select
-                    value={user.role}
-                    onValueChange={(value) => handleRoleChange(user.id, value as UserRole)}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="teacher">Teacher</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Username</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Current Role</TableHead>
+                <TableHead>Points</TableHead>
+                <TableHead>Change Role</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.username}</TableCell>
+                  <TableCell>{user.full_name || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Badge className="capitalize">{user.role}</Badge>
+                  </TableCell>
+                  <TableCell className="text-primary font-medium">{user.total_points}</TableCell>
+                  <TableCell>
+                    <Select
+                      value={user.role}
+                      onValueChange={(value) => handleRoleChange(user.id, value as UserRole)}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="teacher">Teacher</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 
@@ -190,6 +292,64 @@ export default function AdminDashboard() {
           )}
         </CardContent>
       </Card>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Platform Statistics</CardTitle>
+            <CardDescription>Overall engagement metrics</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-accent">
+              <span className="text-sm font-medium">Quiz Attempts</span>
+              <span className="text-lg font-bold text-primary">{quizAttempts.length}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-accent">
+              <span className="text-sm font-medium">Games Played</span>
+              <span className="text-lg font-bold text-primary">{gameProgress.length}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-accent">
+              <span className="text-sm font-medium">Completed Games</span>
+              <span className="text-lg font-bold text-primary">
+                {gameProgress.filter(g => g.completed).length}
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-accent">
+              <span className="text-sm font-medium">Average Points/User</span>
+              <span className="text-lg font-bold text-primary">
+                {users.length > 0 ? (totalPoints / users.length).toFixed(0) : 0}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Performers</CardTitle>
+            <CardDescription>Users with highest eco-points</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {users
+                .sort((a, b) => b.total_points - a.total_points)
+                .slice(0, 5)
+                .map((user, index) => (
+                  <div key={user.id} className="flex items-center justify-between p-3 rounded-lg bg-accent">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg font-bold text-muted-foreground">#{index + 1}</span>
+                      <div>
+                        <p className="font-medium">{user.username}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+                      </div>
+                    </div>
+                    <span className="text-lg font-bold text-primary">{user.total_points}</span>
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
+

@@ -260,6 +260,17 @@ export const quizAttemptsApi = {
     return Array.isArray(data) ? data : [];
   },
 
+  async getAllAttempts(page = 0) {
+    const { data, error } = await supabase
+      .from('quiz_attempts')
+      .select('*, student:profiles(*), quiz:quizzes(*)')
+      .order('completed_at', { ascending: false })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
+  },
+
   async createAttempt(attempt: Omit<QuizAttempt, 'id' | 'created_at' | 'completed_at'>) {
     const { data, error } = await supabase
       .from('quiz_attempts')
@@ -341,6 +352,17 @@ export const challengeProgressApi = {
 
     if (error) throw error;
     return data as ChallengeProgress | null;
+  },
+
+  async getAllProgress(page = 0) {
+    const { data, error } = await supabase
+      .from('challenge_progress')
+      .select('*, student:profiles(*), challenge:challenges(*)')
+      .order('updated_at', { ascending: false })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
   },
 
   async createOrUpdateProgress(progress: Omit<ChallengeProgress, 'id' | 'created_at' | 'updated_at'>) {

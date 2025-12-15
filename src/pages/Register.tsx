@@ -15,20 +15,25 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [role, setRole] = useState<UserRole>('student');
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!username || !password || !confirmPassword) {
+    if (!username || !password || !confirmPassword || !email) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       toast.error('Username can only contain letters, numbers, and underscores');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Please enter a valid email address');
       return;
     }
 
@@ -45,15 +50,15 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const email = `${username}@miaoda.com`;
+      const authEmail = `${username}@miaoda.com`;
       
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: authEmail,
         password,
         options: {
           data: {
             username,
-            full_name: fullName || username,
+            full_name: email,
             role,
           },
         },
@@ -110,14 +115,15 @@ export default function Register() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="email">Email Address *</Label>
               <Input
-                id="fullName"
-                type="text"
-                placeholder="Enter your full name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
+                required
               />
             </div>
             <div className="space-y-2">

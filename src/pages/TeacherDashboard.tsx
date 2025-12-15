@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ecoActionsApi, quizzesApi } from '@/db/api';
+import { ecoActionsApi, quizzesApi, quizAttemptsApi, challengeProgressApi } from '@/db/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Award, Upload, BookOpen, Users } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Award, Upload, BookOpen, Users, FileText, Gamepad2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { EcoActionWithDetails, QuizWithQuestions } from '@/types/types';
 
 export default function TeacherDashboard() {
   const [pendingActions, setPendingActions] = useState<EcoActionWithDetails[]>([]);
   const [quizzes, setQuizzes] = useState<QuizWithQuestions[]>([]);
+  const [quizResults, setQuizResults] = useState<any[]>([]);
+  const [gameResults, setGameResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,12 +22,16 @@ export default function TeacherDashboard() {
 
   const loadData = async () => {
     try {
-      const [actionsData, quizzesData] = await Promise.all([
+      const [actionsData, quizzesData, attemptsData, progressData] = await Promise.all([
         ecoActionsApi.getPendingActions(),
         quizzesApi.getAllQuizzes(),
+        quizAttemptsApi.getAllAttempts(),
+        challengeProgressApi.getAllProgress(),
       ]);
       setPendingActions(actionsData);
       setQuizzes(quizzesData);
+      setQuizResults(attemptsData.slice(0, 10));
+      setGameResults(progressData.slice(0, 10));
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -70,10 +77,10 @@ export default function TeacherDashboard() {
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold gradient-text">Teacher Dashboard</h1>
-        <p className="text-muted-foreground">Manage quizzes and review student activities</p>
+        <p className="text-muted-foreground">Manage content and review student activities</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">My Quizzes</CardTitle>
@@ -92,19 +99,43 @@ export default function TeacherDashboard() {
             <div className="text-2xl font-bold">{pendingActions.length}</div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Quiz Attempts</CardTitle>
+            <FileText className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{quizResults.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Game Completions</CardTitle>
+            <Gamepad2 className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{gameResults.length}</div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="shadow-elegant">
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Manage your teaching content</CardDescription>
+            <CardTitle>Content Management</CardTitle>
+            <CardDescription>Create and manage educational content</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button asChild className="w-full" variant="outline">
               <Link to="/quizzes">
                 <Award className="w-4 h-4 mr-2" />
-                View All Quizzes
+                Manage Quizzes
+              </Link>
+            </Button>
+            <Button asChild className="w-full" variant="outline">
+              <Link to="/challenges">
+                <Gamepad2 className="w-4 h-4 mr-2" />
+                Manage Games
               </Link>
             </Button>
             <Button asChild className="w-full" variant="outline">
@@ -162,6 +193,83 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="shadow-elegant">
+        <CardHeader>
+          <CardTitle>Recent Quiz Results</CardTitle>
+          <CardDescription>Student quiz performance</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {quizResults.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No quiz results yet</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Student</TableHead>
+                  <TableHead>Quiz</TableHead>
+                  <TableHead>Score</TableHead>
+                  <TableHead>Points Earned</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {quizResults.map((result: any) => (
+                  <TableRow key={result.id}>
+                    <TableCell>{result.student?.username || 'Unknown'}</TableCell>
+                    <TableCell>{result.quiz?.title || 'Unknown Quiz'}</TableCell>
+                    <TableCell>{result.score}/{result.total_questions}</TableCell>
+                    <TableCell className="text-primary font-medium">{result.points_earned}</TableCell>
+                    <TableCell>{new Date(result.completed_at).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-elegant">
+        <CardHeader>
+          <CardTitle>Recent Game Results</CardTitle>
+          <CardDescription>Student game performance</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {gameResults.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No game results yet</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Student</TableHead>
+                  <TableHead>Game</TableHead>
+                  <TableHead>Score</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Points Earned</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {gameResults.map((result: any) => (
+                  <TableRow key={result.id}>
+                    <TableCell>{result.student?.username || 'Unknown'}</TableCell>
+                    <TableCell>{result.challenge?.title || 'Unknown Game'}</TableCell>
+                    <TableCell>{result.score}%</TableCell>
+                    <TableCell>
+                      {result.completed ? (
+                        <span className="text-success">✓ Completed</span>
+                      ) : (
+                        <span className="text-muted-foreground">In Progress</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-primary font-medium">{result.points_earned}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
+

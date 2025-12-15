@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { challengesApi, challengeProgressApi, profilesApi } from '@/db/api';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 import type { Challenge, ChallengeProgress } from '@/types/types';
 
 export default function Challenges() {
+  const navigate = useNavigate();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [progress, setProgress] = useState<Record<string, ChallengeProgress>>({});
   const [loading, setLoading] = useState(true);
@@ -46,32 +48,15 @@ export default function Challenges() {
         return;
       }
 
-      const existingProgress = progress[challenge.id];
-      if (existingProgress?.completed) {
-        toast.info('You have already completed this challenge!');
-        return;
-      }
-
-      const score = Math.floor(Math.random() * 100) + 50;
-      const completed = score >= 70;
-
-      await challengeProgressApi.createOrUpdateProgress({
-        challenge_id: challenge.id,
-        student_id: user.id,
-        completed,
-        score,
-        points_earned: completed ? challenge.points_reward : 0,
-        attempts: (existingProgress?.attempts || 0) + 1,
-        completed_at: completed ? new Date().toISOString() : null,
-      });
-
-      if (completed) {
-        toast.success(`Challenge completed! You earned ${challenge.points_reward} points! 🎉`);
+      if (challenge.title === 'Sort the Waste') {
+        navigate('/game/sort-waste');
+      } else if (challenge.title === 'Save the Trees') {
+        navigate('/game/save-trees');
+      } else if (challenge.title === 'Clean the Ocean') {
+        navigate('/game/clean-ocean');
       } else {
-        toast.info(`Score: ${score}. Try again to complete the challenge!`);
+        toast.info('This game is coming soon!');
       }
-
-      loadChallenges();
     } catch (error) {
       console.error('Error starting challenge:', error);
       toast.error('Failed to start challenge');
