@@ -57,37 +57,43 @@ export default function Header() {
   const getNavItems = () => {
     if (!profile) return [];
 
-    const commonItems = [
-      { name: 'Home', path: '/', icon: LayoutDashboard },
-      { name: 'Learn', path: '/learn', icon: BookOpen },
-      { name: 'Quizzes', path: '/quizzes', icon: Award },
-      { name: 'Challenges', path: '/challenges', icon: Gamepad2 },
-      { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
-    ];
-
+    // Student navigation - can play games and quizzes
     if (profile.role === 'student') {
       return [
-        ...commonItems,
+        { name: 'Home', path: '/', icon: LayoutDashboard },
+        { name: 'Learn', path: '/learn', icon: BookOpen },
+        { name: 'Quizzes', path: '/quizzes', icon: Award },
+        { name: 'Challenges', path: '/challenges', icon: Gamepad2 },
+        { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
         { name: 'My Progress', path: '/progress', icon: User },
         { name: 'Eco Actions', path: '/eco-actions', icon: Upload },
       ];
     }
 
+    // Teacher navigation - manage content, view results, no playing
     if (profile.role === 'teacher') {
       return [
-        ...commonItems,
-        { name: 'Teacher Dashboard', path: '/teacher', icon: LayoutDashboard },
+        { name: 'Dashboard', path: '/teacher', icon: LayoutDashboard },
+        { name: 'Manage Quizzes', path: '/teacher?tab=quizzes', icon: Award },
+        { name: 'Manage Games', path: '/teacher?tab=games', icon: Gamepad2 },
+        { name: 'Leaderboard', path: '/teacher?tab=leaderboard', icon: Trophy },
+        { name: 'Eco Actions', path: '/teacher?tab=overview', icon: Upload },
       ];
     }
 
+    // Admin navigation - full access
     if (profile.role === 'admin') {
       return [
-        ...commonItems,
+        { name: 'Home', path: '/', icon: LayoutDashboard },
+        { name: 'Learn', path: '/learn', icon: BookOpen },
+        { name: 'Quizzes', path: '/quizzes', icon: Award },
+        { name: 'Challenges', path: '/challenges', icon: Gamepad2 },
+        { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
         { name: 'Admin Dashboard', path: '/admin', icon: LayoutDashboard },
       ];
     }
 
-    return commonItems;
+    return [];
   };
 
   const navItems = getNavItems();

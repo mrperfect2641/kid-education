@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ecoActionsApi, quizzesApi, quizAttemptsApi, challengeProgressApi, challengesApi, profilesApi } from '@/db/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import type { EcoActionWithDetails, QuizWithQuestions, Challenge } from '@/types/types';
 
 export default function TeacherDashboard() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [pendingActions, setPendingActions] = useState<EcoActionWithDetails[]>([]);
   const [allEcoActions, setAllEcoActions] = useState<EcoActionWithDetails[]>([]);
   const [quizzes, setQuizzes] = useState<QuizWithQuestions[]>([]);
@@ -20,11 +21,17 @@ export default function TeacherDashboard() {
   const [gameResults, setGameResults] = useState<any[]>([]);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  
+  // Get active tab from URL query parameter, default to 'overview'
+  const activeTab = searchParams.get('tab') || 'overview';
 
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
 
   const loadData = async () => {
     try {
@@ -202,7 +209,7 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="quizzes">Manage Quizzes</TabsTrigger>

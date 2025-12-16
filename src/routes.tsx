@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import RoleGuard from './components/common/RoleGuard';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -26,7 +27,11 @@ const routes: RouteConfig[] = [
   {
     name: 'Home',
     path: '/',
-    element: <Home />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <Home />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
@@ -44,67 +49,111 @@ const routes: RouteConfig[] = [
   {
     name: 'Learn',
     path: '/learn',
-    element: <Learn />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <Learn />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Quizzes',
     path: '/quizzes',
-    element: <Quizzes />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <Quizzes />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Quiz',
     path: '/quiz/:id',
-    element: <QuizTake />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <QuizTake />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Challenges',
     path: '/challenges',
-    element: <Challenges />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <Challenges />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Sort Waste Game',
     path: '/game/sort-waste',
-    element: <SortWasteGame />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <SortWasteGame />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Save Trees Game',
     path: '/game/save-trees',
-    element: <SaveTreesGame />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <SaveTreesGame />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Clean Ocean Game',
     path: '/game/clean-ocean',
-    element: <CleanOceanGame />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <CleanOceanGame />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Leaderboard',
     path: '/leaderboard',
-    element: <Leaderboard />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <Leaderboard />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Eco Actions',
     path: '/eco-actions',
-    element: <EcoActions />,
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <EcoActions />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Teacher Dashboard',
     path: '/teacher',
-    element: <TeacherDashboard />,
+    element: (
+      <RoleGuard allowedRoles={['teacher', 'admin']}>
+        <TeacherDashboard />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
     name: 'Admin Dashboard',
     path: '/admin',
-    element: <AdminDashboard />,
+    element: (
+      <RoleGuard allowedRoles={['admin']}>
+        <AdminDashboard />
+      </RoleGuard>
+    ),
     visible: false,
   },
   {
