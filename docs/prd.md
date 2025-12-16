@@ -40,22 +40,22 @@ A web-based learning system that combines environmental education with gamificat
 \n### 3.5 Module 5: Teacher Dashboard
 - **Add and manage learning modules:**
   - Create new learning modules with environmental topics
-  - Edit existing learning module content
-  - Add or remove information in learning modules
+  - Edit existing learning module content with text editor or input fields to write and add information
+  - Add or remove information in learning modules through dedicated editing interface
   - Update module descriptions and educational materials
 - **Create and manage quizzes:**
   - Add new quizzes with questions and answer options
-  - Edit existing quizzes
-  - Delete quizzes
-  - Added quizzes automatically appear in student dashboard
-- **Create and manage games:**
+  - Edit existing quizzes\n  - Delete quizzes\n  - Added quizzes automatically appear in student dashboard\n- **Create and manage games:**
   - Add new games and challenges
   - Edit existing games\n  - Delete games
   - Added games automatically appear in student dashboard
 - Conduct quizzes and games for students
 - View class leaderboard of students
 - Generate performance reports and results of students
-- View and approve eco-actions submitted by students
+- **View eco-actions submitted by students:**
+  - Access list of all eco-actions submitted by students
+  - View details of each submission including images and descriptions
+  - Approve or reject eco-actions
 - Monitor student activity, scores, and progress
 - No option to play games or take quizzes (teacher role is for management and evaluation only)
 
@@ -87,7 +87,7 @@ A web-based learning system that combines environmental education with gamificat
 - Login with email, password, and Teacher role selection → redirected to Teacher Dashboard
 - **Manage learning modules:**
   - Add new learning modules
-  - Edit existing learning module information
+  - Edit existing learning module information using text editor or input fields
   - Remove or update module content
 - **Manage quizzes:**
   - Create new quizzes with questions\n  - Edit existing quizzes
@@ -101,7 +101,10 @@ A web-based learning system that combines environmental education with gamificat
 - Conduct games and quizzes for students
 - View class leaderboard of students
 - Generate results and performance reports of students
-- View and approve eco-actions submitted by students
+- **View and manage eco-actions:**
+  - Access all eco-actions submitted by students
+  - Review submission details
+  - Approve or reject eco-actions
 - Monitor student performance, quiz results, and game results
 - No access to play games or take quizzes\n
 ### 4.3 Admin
@@ -132,14 +135,13 @@ A web-based learning system that combines environmental education with gamificat
 - Overview of platform features\n- Eco-points summary
 - Quick access to all quizzes and games added by teachers
 - View learning modules created by teachers
-- Access to leaderboard
-- Submit eco-actions\n- Track personal progress and badges
+- Access to leaderboard\n- Submit eco-actions\n- Track personal progress and badges
 - Dynamically updated when teachers add new quizzes or games
 
 ### 5.3 Teacher Dashboard
 - **Learning Module Management Section:**
   - Add new learning modules
-  - Edit existing module content
+  - Edit existing module content with text editor or input fields for writing and adding information
   - Remove or update information in modules
 - **Quiz Management Section:**
   - Create new quizzes\n  - Edit existing quizzes
@@ -149,13 +151,14 @@ A web-based learning system that combines environmental education with gamificat
   - Add new games
   - Edit existing games
   - Delete games\n  - View list of all created games
-- View class leaderboard
-- Generate student results and performance reports
-- View eco-actions submitted by students
-- Approve or reject eco-actions
+- **Eco-Action Review Section:**
+  - View all eco-actions submitted by students
+  - Display submission details (images, descriptions, student name, submission date)
+  - Approve or reject buttons for each submission
+  - Filter and search options for eco-actions
+- View class leaderboard\n- Generate student results and performance reports
 - Monitor student activity and progress
-
-### 5.4 Admin Dashboard
+\n### 5.4 Admin Dashboard
 - Manage student user accounts
 - Maintain database integrity tools
 - Generate reports of students' performance and activities
@@ -181,12 +184,17 @@ A web-based learning system that combines environmental education with gamificat
 - Students upload real-life eco-actions
 - Image upload and description fields
 - Submission history and status tracking
-\n### 5.9 About / Help Page
+\n### 5.9 Learning Module Edit Page (Teacher)
+- Text editor or rich text input fields for writing and adding module content
+- Section for module title and description
+- Save and preview options
+- Cancel and delete options
+
+### 5.10 About / Help Page
 - Explanation of project purpose
 - Usage instructions for students, teachers, and admins
 - Contact information
-
-## 6. Technical Requirements
+\n## 6. Technical Requirements
 
 ### 6.1 Frontend
 - HTML, CSS, JavaScript\n- Responsive design for various screen sizes

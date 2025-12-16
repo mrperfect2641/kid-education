@@ -116,6 +116,23 @@ export default function TeacherDashboard() {
     }
   };
 
+  const handleReviewEcoAction = async (actionId: string, status: 'approved' | 'rejected', reviewNotes?: string) => {
+    try {
+      const user = await profilesApi.getCurrentUser();
+      if (!user) {
+        toast.error('You must be logged in to review eco-actions');
+        return;
+      }
+
+      await ecoActionsApi.reviewAction(actionId, status, user.id, reviewNotes);
+      toast.success(`Eco-action ${status} successfully!`);
+      loadData();
+    } catch (error) {
+      console.error('Error reviewing eco-action:', error);
+      toast.error('Failed to review eco-action');
+    }
+  };
+
   const generateStudentReport = () => {
     const totalQuizAttempts = quizResults.length;
     const totalGamesPlayed = gameResults.length;
@@ -231,11 +248,12 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="quizzes">Manage Quizzes</TabsTrigger>
           <TabsTrigger value="games">Manage Games</TabsTrigger>
           <TabsTrigger value="modules">Learning Modules</TabsTrigger>
+          <TabsTrigger value="eco-actions">Eco-Actions</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
         </TabsList>
 
@@ -587,11 +605,15 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" asChild>
-                              <Link to={`/learn/${topic.id}`}>
-                                <Edit className="w-4 h-4" />
-                              </Link>
-                            </Button>
+                            <CreateModuleDialog 
+                              module={topic} 
+                              onSuccess={loadData}
+                              trigger={
+                                <Button size="sm" variant="outline">
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              }
+                            />
                             <Button
                               size="sm"
                               variant="outline"
@@ -600,6 +622,95 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
                               <Trash2 className="w-4 h-4 text-destructive" />
                             </Button>
                           </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Eco-Actions Tab */}
+        <TabsContent value="eco-actions" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Student Eco-Actions</CardTitle>
+              <CardDescription>Review and approve eco-actions submitted by students</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {allEcoActions.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No eco-actions submitted yet</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Points</TableHead>
+                      <TableHead>Submitted</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allEcoActions.map((action) => (
+                      <TableRow key={action.id}>
+                        <TableCell className="font-medium">
+                          {action.student?.username || 'Unknown'}
+                        </TableCell>
+                        <TableCell>{action.title}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{action.action_type}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            action.status === 'approved' ? 'default' : 
+                            action.status === 'rejected' ? 'destructive' : 
+                            'secondary'
+                          }>
+                            {action.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{action.points_reward}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(action.submitted_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          {action.status === 'pending' ? (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleReviewEcoAction(action.id, 'approved')}
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  const notes = prompt('Enter rejection reason (optional):');
+                                  handleReviewEcoAction(action.id, 'rejected', notes || undefined);
+                                }}
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              {action.status === 'approved' ? (
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <XCircle className="w-4 h-4 text-red-500" />
+                              )}
+                              <span>Reviewed</span>
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

@@ -1,18 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Plus } from 'lucide-react';
+import { Plus, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { topicsApi, profilesApi } from '@/db/api';
+import type { Topic } from '@/types/types';
 
 interface CreateModuleDialogProps {
+  module?: Topic;
   onSuccess?: () => void;
+  trigger?: React.ReactNode;
 }
 
-export default function CreateModuleDialog({ onSuccess }: CreateModuleDialogProps) {
+export default function CreateModuleDialog({ module, onSuccess, trigger }: CreateModuleDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState('');
@@ -20,6 +23,16 @@ export default function CreateModuleDialog({ onSuccess }: CreateModuleDialogProp
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    if (module && open) {
+      setTitle(module.title || '');
+      setDescription(module.description || '');
+      setContent(module.content || '');
+      setCategory(module.icon || '');
+      setImageUrl('');
+    }
+  }, [module, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,28 +54,40 @@ export default function CreateModuleDialog({ onSuccess }: CreateModuleDialogProp
 
     setLoading(true);
     try {
-      const user = await profilesApi.getCurrentUser();
-      if (!user) {
-        toast.error('You must be logged in to create a module');
-        return;
+      if (module) {
+        // Update existing module
+        await topicsApi.updateTopic(module.id, {
+          title: title.trim(),
+          description: description.trim() || null,
+          content: content.trim(),
+          icon: category.trim() || null,
+        });
+        toast.success('Learning module updated successfully!');
+      } else {
+        // Create new module
+        const user = await profilesApi.getCurrentUser();
+        if (!user) {
+          toast.error('You must be logged in to create a module');
+          return;
+        }
+
+        await topicsApi.createTopic({
+          title: title.trim(),
+          description: description.trim() || null,
+          content: content.trim(),
+          icon: category.trim() || null,
+          order_index: 0,
+          created_by: user.id,
+        });
+        toast.success('Learning module created successfully!');
       }
 
-      await topicsApi.createTopic({
-        title: title.trim(),
-        description: description.trim() || null,
-        content: content.trim(),
-        icon: category.trim() || null,
-        order_index: 0,
-        created_by: user.id,
-      });
-
-      toast.success('Learning module created successfully!');
       setOpen(false);
       resetForm();
       onSuccess?.();
     } catch (error) {
-      console.error('Error creating module:', error);
-      toast.error('Failed to create learning module');
+      console.error('Error saving module:', error);
+      toast.error(`Failed to ${module ? 'update' : 'create'} learning module`);
     } finally {
       setLoading(false);
     }
@@ -78,17 +103,23 @@ export default function CreateModuleDialog({ onSuccess }: CreateModuleDialogProp
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Create New Module
-        </Button>
-      </DialogTrigger>
+      {trigger ? (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Create New Module
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Learning Module</DialogTitle>
+          <DialogTitle>{module ? 'Edit Learning Module' : 'Create New Learning Module'}</DialogTitle>
           <DialogDescription>
-            Add educational content for students to learn about environmental topics.
+            {module ? 'Update the educational content for this module.' : 'Add educational content for students to learn about environmental topics.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -164,7 +195,7 @@ export default function CreateModuleDialog({ onSuccess }: CreateModuleDialogProp
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Module'}
+              {loading ? (module ? 'Updating...' : 'Creating...') : (module ? 'Update Module' : 'Create Module')}
             </Button>
           </div>
         </form>
