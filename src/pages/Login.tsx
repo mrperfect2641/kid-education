@@ -54,7 +54,8 @@ export default function Login() {
 
         // Check if selected role matches registered role
         if (profile.role !== selectedRole) {
-          toast.error(`This account is registered as a ${profile.role}. Please select "${profile.role}" to login.`);
+          const article = profile.role === 'admin' ? 'an' : 'a';
+          toast.error(`This account is registered as ${article} ${profile.role}. Please select "${profile.role}" to login.`);
           await supabase.auth.signOut();
           setLoading(false);
           return;
