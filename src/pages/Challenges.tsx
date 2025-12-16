@@ -48,6 +48,7 @@ export default function Challenges() {
         return;
       }
 
+      // Route to specific game pages for the 3 built-in games
       if (challenge.title === 'Sort the Waste') {
         navigate('/game/sort-waste');
       } else if (challenge.title === 'Save the Trees') {
@@ -55,7 +56,8 @@ export default function Challenges() {
       } else if (challenge.title === 'Clean the Ocean') {
         navigate('/game/clean-ocean');
       } else {
-        toast.info('This game is coming soon!');
+        // Route to generic challenge page for teacher-created challenges
+        navigate(`/challenge/${challenge.id}`);
       }
     } catch (error) {
       console.error('Error starting challenge:', error);

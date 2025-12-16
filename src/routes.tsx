@@ -7,6 +7,7 @@ import Learn from './pages/Learn';
 import Quizzes from './pages/Quizzes';
 import QuizTake from './pages/QuizTake';
 import Challenges from './pages/Challenges';
+import GenericChallenge from './pages/GenericChallenge';
 import SortWasteGame from './pages/games/SortWasteGame';
 import SaveTreesGame from './pages/games/SaveTreesGame';
 import CleanOceanGame from './pages/games/CleanOceanGame';
@@ -82,6 +83,16 @@ const routes: RouteConfig[] = [
     element: (
       <RoleGuard allowedRoles={['student', 'admin']}>
         <Challenges />
+      </RoleGuard>
+    ),
+    visible: false,
+  },
+  {
+    name: 'Challenge',
+    path: '/challenge/:id',
+    element: (
+      <RoleGuard allowedRoles={['student', 'admin']}>
+        <GenericChallenge />
       </RoleGuard>
     ),
     visible: false,
