@@ -178,7 +178,7 @@ export default function CreateQuizDialog({ onSuccess }: CreateQuizDialogProps) {
         <DialogHeader>
           <DialogTitle>Create New Quiz</DialogTitle>
           <DialogDescription>
-            Add a new quiz for students to take. Include multiple questions with options.
+            Add a new quiz with multiple-choice questions for students. For interactive games, use "Create New Game" instead.
           </DialogDescription>
         </DialogHeader>
 

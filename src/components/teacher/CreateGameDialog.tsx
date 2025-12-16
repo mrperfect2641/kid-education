@@ -82,7 +82,7 @@ export default function CreateGameDialog({ onSuccess }: CreateGameDialogProps) {
         <DialogHeader>
           <DialogTitle>Create New Game/Challenge</DialogTitle>
           <DialogDescription>
-            Add a new interactive game or challenge for students to complete.
+            Add a new interactive game or challenge for students. For quizzes with questions, use "Create New Quiz" instead.
           </DialogDescription>
         </DialogHeader>
 
@@ -134,10 +134,10 @@ export default function CreateGameDialog({ onSuccess }: CreateGameDialogProps) {
                   <SelectContent>
                     <SelectItem value="sorting">Sorting Game</SelectItem>
                     <SelectItem value="matching">Matching Game</SelectItem>
-                    <SelectItem value="quiz">Interactive Quiz</SelectItem>
                     <SelectItem value="simulation">Simulation</SelectItem>
                     <SelectItem value="puzzle">Puzzle</SelectItem>
                     <SelectItem value="action">Action Game</SelectItem>
+                    <SelectItem value="adventure">Adventure</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

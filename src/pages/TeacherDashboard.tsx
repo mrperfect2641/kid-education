@@ -372,7 +372,7 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Quiz Management</CardTitle>
-                <CardDescription>Add, edit, or delete quizzes</CardDescription>
+                <CardDescription>Create and manage quizzes with multiple-choice questions. Students can take these quizzes from the "Quizzes" page.</CardDescription>
               </div>
               <CreateQuizDialog onSuccess={loadData} />
             </CardHeader>
@@ -426,7 +426,7 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Game Management</CardTitle>
-                <CardDescription>Add, edit, or delete games/challenges</CardDescription>
+                <CardDescription>Create and manage interactive games and challenges. Students can play these games from the "Challenges" page.</CardDescription>
               </div>
               <CreateGameDialog onSuccess={loadData} />
             </CardHeader>
