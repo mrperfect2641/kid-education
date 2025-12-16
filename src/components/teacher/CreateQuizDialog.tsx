@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { quizzesApi, quizQuestionsApi, topicsApi, profilesApi } from '@/db/api';
-import type { QuizQuestion } from '@/types/types';
+import type { QuizQuestion, Topic } from '@/types/types';
 
 interface CreateQuizDialogProps {
   onSuccess?: () => void;
@@ -20,7 +20,8 @@ export default function CreateQuizDialog({ onSuccess }: CreateQuizDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
-  const [category, setCategory] = useState('');
+  const [selectedTopicId, setSelectedTopicId] = useState('');
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [pointsPerQuestion, setPointsPerQuestion] = useState(10);
   const [questions, setQuestions] = useState<Partial<QuizQuestion>[]>([
     {
@@ -31,6 +32,22 @@ export default function CreateQuizDialog({ onSuccess }: CreateQuizDialogProps) {
       points: 10,
     },
   ]);
+
+  useEffect(() => {
+    if (open) {
+      loadTopics();
+    }
+  }, [open]);
+
+  const loadTopics = async () => {
+    try {
+      const topicsData = await topicsApi.getAllTopics();
+      setTopics(topicsData);
+    } catch (error) {
+      console.error('Error loading topics:', error);
+      toast.error('Failed to load topics');
+    }
+  };
 
   const handleAddQuestion = () => {
     setQuestions([
@@ -73,8 +90,8 @@ export default function CreateQuizDialog({ onSuccess }: CreateQuizDialogProps) {
       return;
     }
     
-    if (!category.trim()) {
-      toast.error('Please enter a category');
+    if (!selectedTopicId) {
+      toast.error('Please select a topic/module');
       return;
     }
 
@@ -105,17 +122,8 @@ export default function CreateQuizDialog({ onSuccess }: CreateQuizDialogProps) {
         return;
       }
 
-      const topic = await topicsApi.createTopic({
-        title: category.trim(),
-        description: `Category for ${title.trim()}`,
-        content: null,
-        icon: difficulty,
-        order_index: 0,
-        created_by: user.id,
-      });
-
       const quiz = await quizzesApi.createQuiz({
-        topic_id: topic.id,
+        topic_id: selectedTopicId,
         title: title.trim(),
         description: description.trim(),
         points_reward: pointsPerQuestion * questions.length,
@@ -153,7 +161,7 @@ export default function CreateQuizDialog({ onSuccess }: CreateQuizDialogProps) {
     setTitle('');
     setDescription('');
     setDifficulty('medium');
-    setCategory('');
+    setSelectedTopicId('');
     setPointsPerQuestion(10);
     setQuestions([
       {
@@ -197,14 +205,19 @@ export default function CreateQuizDialog({ onSuccess }: CreateQuizDialogProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category">Category *</Label>
-                <Input
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="e.g., Climate Change"
-                  required
-                />
+                <Label htmlFor="topic">Learning Module/Topic *</Label>
+                <Select value={selectedTopicId} onValueChange={setSelectedTopicId}>
+                  <SelectTrigger id="topic">
+                    <SelectValue placeholder="Select a topic" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {topics.map((topic) => (
+                      <SelectItem key={topic.id} value={topic.id}>
+                        {topic.icon} {topic.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
