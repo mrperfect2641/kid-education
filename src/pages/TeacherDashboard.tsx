@@ -7,7 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Award, Upload, BookOpen, Users, FileText, Gamepad2, Trophy, CheckCircle, XCircle, Clock, Plus, Edit, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Award, Upload, BookOpen, Users, FileText, Gamepad2, Trophy, CheckCircle, XCircle, Clock, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import CreateQuizDialog from '@/components/teacher/CreateQuizDialog';
 import CreateGameDialog from '@/components/teacher/CreateGameDialog';
@@ -679,38 +680,99 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
                           {new Date(action.submitted_at).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          {action.status === 'pending' ? (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => handleReviewEcoAction(action.id, 'approved')}
-                              >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => {
-                                  const notes = prompt('Enter rejection reason (optional):');
-                                  handleReviewEcoAction(action.id, 'rejected', notes || undefined);
-                                }}
-                              >
-                                <XCircle className="w-4 h-4 mr-1" />
-                                Reject
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              {action.status === 'approved' ? (
-                                <CheckCircle className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <XCircle className="w-4 h-4 text-red-500" />
-                              )}
-                              <span>Reviewed</span>
-                            </div>
-                          )}
+                          <div className="flex gap-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>{action.title}</DialogTitle>
+                                  <DialogDescription>
+                                    Submitted by {action.student?.username || 'Unknown'} on {new Date(action.submitted_at).toLocaleDateString()}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div>
+                                    <h4 className="font-semibold mb-2">Type</h4>
+                                    <Badge variant="outline">{action.action_type}</Badge>
+                                  </div>
+                                  {action.description && (
+                                    <div>
+                                      <h4 className="font-semibold mb-2">Description</h4>
+                                      <p className="text-muted-foreground">{action.description}</p>
+                                    </div>
+                                  )}
+                                  {action.image_url && (
+                                    <div>
+                                      <h4 className="font-semibold mb-2">Image</h4>
+                                      <img 
+                                        src={action.image_url} 
+                                        alt={action.title}
+                                        className="w-full rounded-lg border"
+                                      />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <h4 className="font-semibold mb-2">Status</h4>
+                                    <Badge variant={
+                                      action.status === 'approved' ? 'default' : 
+                                      action.status === 'rejected' ? 'destructive' : 
+                                      'secondary'
+                                    }>
+                                      {action.status}
+                                    </Badge>
+                                  </div>
+                                  {action.review_notes && (
+                                    <div>
+                                      <h4 className="font-semibold mb-2">Review Notes</h4>
+                                      <p className="text-muted-foreground">{action.review_notes}</p>
+                                    </div>
+                                  )}
+                                  <div>
+                                    <h4 className="font-semibold mb-2">Points Reward</h4>
+                                    <p className="text-primary font-medium">{action.points_reward} points</p>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                            {action.status === 'pending' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => handleReviewEcoAction(action.id, 'approved')}
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    const notes = prompt('Enter rejection reason (optional):');
+                                    handleReviewEcoAction(action.id, 'rejected', notes || undefined);
+                                  }}
+                                >
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                            {action.status !== 'pending' && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                {action.status === 'approved' ? (
+                                  <CheckCircle className="w-4 h-4 text-green-500" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 text-red-500" />
+                                )}
+                                <span>Reviewed</span>
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

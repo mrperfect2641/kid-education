@@ -6,7 +6,8 @@ Gamified Environmental Education Platform
 ## 2. Website Description
 A web-based learning system that combines environmental education with gamification elements including quizzes, games, points, and challenges. The platform aims to engage students in sustainability topics such as pollution, waste management, and renewable energy through interactive and enjoyable learning experiences, while promoting eco-friendly habits.\n
 ## 3. Website Functionalities
-\n### 3.1 Module 1: User Registration and Login
+
+### 3.1 Module 1: User Registration and Login
 - Users can register by selecting their role (Student/Teacher/Admin) during registration
 - Registration requires email ID (used as username), password, and role selection
 - Role-based registration: system creates user account according to selected role (Student/Teacher/Admin)
@@ -32,8 +33,7 @@ A web-based learning system that combines environmental education with gamificat
 - Student dashboard displays all games added by teachers
 - Games dynamically appear in student dashboard when teachers add them
 - Students can play multiple games added by teachers
-
-### 3.4 Module 4: Leaderboard & Rewards Module
+\n### 3.4 Module 4: Leaderboard & Rewards Module
 - Display top-performing students ranked by eco-points
 - Award badges and certificates for milestones (e.g., 'Green Hero,' 'Eco Star')
 - Encourage healthy competition among students
@@ -47,19 +47,23 @@ A web-based learning system that combines environmental education with gamificat
 - **Create and manage quizzes:**
   - Add multiple new quizzes with questions and answer options
   - Option to add more quizzes at any time
-  - Edit existing quizzes\n  - Delete quizzes\n  - Added quizzes automatically appear in student dashboard\n  - Students can access and solve all added quizzes from their dashboard
+  - Edit existing quizzes\n  - Delete quizzes\n  - Added quizzes automatically appear in student dashboard
+  - Students can access and solve all added quizzes from their dashboard
 - **Create and manage games:**
   - Add multiple new games and challenges
   - Option to add more games at any time\n  - Edit existing games
   - Delete games
-  - Added games automatically appear in student dashboard\n  - Students can play all added games from their dashboard
+  - Added games automatically appear in student dashboard
+  - Students can play all added games from their dashboard
 - Conduct quizzes and games for students
 - View class leaderboard of students
 - Generate performance reports and results of students
-- **View eco-actions submitted by students:**
-  - Access list of all eco-actions submitted by students
-  - View details of each submission including images and descriptions
-  - Approve or reject eco-actions
+- **View and manage eco-actions submitted by students:**
+  - Access dedicated Eco-Action section in teacher dashboard\n  - View complete list of all eco-actions submitted by students
+  - View detailed information for each submission including student name, submission date, uploaded images, and activity descriptions
+  - Approve or reject eco-actions with action buttons
+  - Filter and search eco-actions by student name, date, or status
+  - Track approval status of each eco-action
 - Monitor student activity, scores, and progress
 - No option to play games or take quizzes (teacher role is for management and evaluation only)
 
@@ -104,9 +108,10 @@ A web-based learning system that combines environmental education with gamificat
 - View class leaderboard of students
 - Generate results and performance reports of students
 - **View and manage eco-actions:**
-  - Access all eco-actions submitted by students
-  - Review submission details
-  - Approve or reject eco-actions
+  - Access Eco-Action section in dashboard
+  - View all eco-actions submitted by students with complete details
+  - Review submission information including images and descriptions
+  - Approve or reject eco-actions\n  - Filter and search through submissions
 - Monitor student performance, quiz results, and game results
 - No access to play games or take quizzes\n
 ### 4.3 Admin
@@ -118,7 +123,8 @@ A web-based learning system that combines environmental education with gamificat
 - Handle system reports and feedback
 - Maintain and update content, quizzes, and lessons
 - Manage class leaderboards
-- Approve real-life eco-actions\n- No option to play quizzes, games, view leaderboard as a participant, or access learning modules as a student\n
+- Approve real-life eco-actions\n- No option to play quizzes, games, view leaderboard as a participant, or access learning modules as a student
+
 ### 4.4 External Verifier (Optional)
 - Validate real-life eco-actions submitted by students
 - Provide additional verification layer for eco-activities
@@ -131,8 +137,7 @@ A web-based learning system that combines environmental education with gamificat
 - Role selection dropdown before login
 - System creates account based on selected role during registration
 - System redirects to appropriate dashboard based on role selected during login
-
-### 5.2 Student Dashboard
+\n### 5.2 Student Dashboard
 - Overview of platform features\n- Eco-points summary
 - Quick access to all quizzes added by teachers
 - Quick access to all games added by teachers\n- View learning modules created by teachers
@@ -157,11 +162,18 @@ A web-based learning system that combines environmental education with gamificat
   - Delete games\n  - View list of all created games
   - Counter showing total number of games added
 - **Eco-Action Review Section:**
-  - View all eco-actions submitted by students
-  - Display submission details (images, descriptions, student name, submission date)
-  - Approve or reject buttons for each submission
-  - Filter and search options for eco-actions
-- View class leaderboard\n- Generate student results and performance reports
+  - Dedicated section for viewing eco-actions submitted by students
+  - Display comprehensive list of all student submissions\n  - Show submission details including:
+    - Student name
+    - Submission date and time
+    - Uploaded images
+    - Activity descriptions
+    - Current approval status (pending/approved/rejected)
+  - Action buttons for each submission: Approve and Reject
+  - Filter options: by student name, submission date, approval status
+  - Search functionality to find specific eco-actions
+  - Pagination for browsing through multiple submissions
+  - Counter showing total number of pending, approved, and rejected eco-actions\n- View class leaderboard\n- Generate student results and performance reports
 - Monitor student activity and progress
 \n### 5.4 Admin Dashboard
 - Manage student user accounts
@@ -177,8 +189,7 @@ A web-based learning system that combines environmental education with gamificat
 - Eco-points earned display
 - All quizzes added by teachers are accessible
 - Navigation to browse through multiple quizzes
-
-### 5.6 Game / Challenge Page
+\n### 5.6 Game / Challenge Page
 - Fully functional interactive learning games and missions
 - Challenge instructions and objectives
 - Progress tracking\n- Badge awards upon completion
@@ -212,8 +223,7 @@ A web-based learning system that combines environmental education with gamificat
 - Explanation of project purpose
 - Usage instructions for students, teachers, and admins
 - Contact information
-
-## 6. Technical Requirements
+\n## 6. Technical Requirements
 
 ### 6.1 Frontend
 - HTML, CSS, JavaScript\n- Responsive design for various screen sizes
@@ -234,16 +244,15 @@ A web-based learning system that combines environmental education with gamificat
 - Role-based dashboard redirection upon login
 - Secure password storage
 
-## 7. Design Style
-- Primary color scheme: Lavender theme with complementary soft purples, whites, and light greens to reflect environmental focus
+## 7. Design Style\n- Primary color scheme: Lavender theme with complementary soft purples, whites, and light greens to reflect environmental focus
 - Visual details: Rounded corners for cards and buttons, subtle shadows for depth, nature-inspired icons (leaves, trees, water drops)
 - Layout: Card-based layout for quizzes and games with grid display for multiple items, clean list view for leaderboards, grid layout for dashboard widgets
 - Typography: Clean, readable fonts suitable for educational content
 - Interactive elements: Smooth hover effects, animated badges and point notifications, clear'Add More' buttons with plus icons
 
 ## 8. Reference Diagram
-Use case diagram provided by user: Screenshot2025-10-30 153656.png showing relationships between Admin, Teacher, Student, and External Verifier with the Gamified Environmental Education Platform system.
+Use case diagram provided by user: Screenshot2025-10-30153656.png showing relationships between Admin, Teacher, Student, and External Verifier with the Gamified Environmental Education Platform system.
 
 ## 9. Reference Images
-- Screenshot 2025-10-30 153656.png: Use case diagram with relationships
+- Screenshot2025-10-30 153656.png: Use case diagram with relationships
 - image.png: Error message display example for role-based login validation
