@@ -14,6 +14,8 @@ interface CreateQuizDialogProps {
   onSuccess?: () => void;
 }
 
+// Dialog for creating new quizzes with topic selection
+
 export default function CreateQuizDialog({ onSuccess }: CreateQuizDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
