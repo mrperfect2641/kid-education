@@ -76,18 +76,32 @@ export default function CleanOceanGame() {
     try {
       const user = await profilesApi.getCurrentUser();
       if (user) {
+        // Get existing progress to check if already completed
+        const existingProgress = await challengeProgressApi.getChallengeProgress(
+          '33333333-3333-3333-3333-333333333333',
+          user.id
+        );
+
+        const wasAlreadyCompleted = existingProgress?.completed || false;
+        const currentAttempts = existingProgress?.attempts || 0;
+
+        // Save progress
         await challengeProgressApi.createOrUpdateProgress({
           challenge_id: '33333333-3333-3333-3333-333333333333',
           student_id: user.id,
-          completed,
+          completed: completed || wasAlreadyCompleted,
           score: Math.round(score),
-          points_earned: completed ? 30 : 0,
-          attempts: 1,
-          completed_at: completed ? new Date().toISOString() : null,
+          points_earned: completed && !wasAlreadyCompleted ? 30 : 0,
+          attempts: currentAttempts + 1,
+          completed_at: completed && !wasAlreadyCompleted ? new Date().toISOString() : existingProgress?.completed_at || null,
         });
 
-        if (completed) {
+        if (completed && !wasAlreadyCompleted) {
           toast.success(`Challenge completed! You earned 30 points! 🎉`);
+        } else if (completed && wasAlreadyCompleted) {
+          toast.success(`Great job! You collected ${collected} pieces of trash!`);
+        } else {
+          toast.info(`You collected ${collected} pieces. Try again to complete!`);
         }
       }
     } catch (error) {

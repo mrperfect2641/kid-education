@@ -67,18 +67,30 @@ export default function SortWasteGame() {
     try {
       const user = await profilesApi.getCurrentUser();
       if (user) {
+        // Get existing progress to check if already completed
+        const existingProgress = await challengeProgressApi.getChallengeProgress(
+          '11111111-1111-1111-1111-111111111111',
+          user.id
+        );
+
+        const wasAlreadyCompleted = existingProgress?.completed || false;
+        const currentAttempts = existingProgress?.attempts || 0;
+
+        // Save progress
         await challengeProgressApi.createOrUpdateProgress({
           challenge_id: '11111111-1111-1111-1111-111111111111',
           student_id: user.id,
-          completed,
+          completed: completed || wasAlreadyCompleted, // Keep completed status if already completed
           score: finalScore,
-          points_earned: completed ? 20 : 0,
-          attempts: 1,
-          completed_at: completed ? new Date().toISOString() : null,
+          points_earned: completed && !wasAlreadyCompleted ? 20 : 0, // Only award points on first completion
+          attempts: currentAttempts + 1,
+          completed_at: completed && !wasAlreadyCompleted ? new Date().toISOString() : existingProgress?.completed_at || null,
         });
 
-        if (completed) {
+        if (completed && !wasAlreadyCompleted) {
           toast.success(`Game completed! You earned 20 points! 🎉`);
+        } else if (completed && wasAlreadyCompleted) {
+          toast.success(`Great job! Score: ${finalScore}/100`);
         } else {
           toast.info(`Score: ${finalScore}/100. Try again to complete!`);
         }

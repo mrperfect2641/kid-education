@@ -52,22 +52,25 @@ export default function GenericChallenge() {
         return;
       }
 
+      // Check if already completed
+      if (progress?.completed) {
+        toast.info('You have already completed this challenge!');
+        return;
+      }
+
       setCompleting(true);
 
-      // Create or update progress
+      const currentAttempts = progress?.attempts || 0;
+
+      // Create or update progress - trigger will handle points update
       await challengeProgressApi.createOrUpdateProgress({
         student_id: user.id,
         challenge_id: id,
         completed: true,
         score: 100,
-        attempts: (progress?.attempts || 0) + 1,
+        attempts: currentAttempts + 1,
         points_earned: challenge.points_reward,
         completed_at: new Date().toISOString(),
-      });
-
-      // Update user points
-      await profilesApi.updateProfile(user.id, {
-        total_points: (user.total_points || 0) + challenge.points_reward,
       });
 
       toast.success(`Challenge completed! You earned ${challenge.points_reward} eco-points!`);

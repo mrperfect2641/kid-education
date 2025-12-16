@@ -102,18 +102,32 @@ export default function SaveTreesGame() {
     try {
       const user = await profilesApi.getCurrentUser();
       if (user) {
+        // Get existing progress to check if already completed
+        const existingProgress = await challengeProgressApi.getChallengeProgress(
+          '22222222-2222-2222-2222-222222222222',
+          user.id
+        );
+
+        const wasAlreadyCompleted = existingProgress?.completed || false;
+        const currentAttempts = existingProgress?.attempts || 0;
+
+        // Save progress
         await challengeProgressApi.createOrUpdateProgress({
           challenge_id: '22222222-2222-2222-2222-222222222222',
           student_id: user.id,
-          completed,
+          completed: completed || wasAlreadyCompleted,
           score: Math.round(score),
-          points_earned: completed ? 25 : 0,
-          attempts: 1,
-          completed_at: completed ? new Date().toISOString() : null,
+          points_earned: completed && !wasAlreadyCompleted ? 30 : 0, // Match the points_reward from migration
+          attempts: currentAttempts + 1,
+          completed_at: completed && !wasAlreadyCompleted ? new Date().toISOString() : existingProgress?.completed_at || null,
         });
 
-        if (completed) {
-          toast.success(`Challenge completed! You earned 25 points! 🎉`);
+        if (completed && !wasAlreadyCompleted) {
+          toast.success(`Challenge completed! You earned 30 points! 🎉`);
+        } else if (completed && wasAlreadyCompleted) {
+          toast.success(`Great job! You planted ${treesPlanted} trees!`);
+        } else {
+          toast.info(`You planted ${treesPlanted} trees. Try again to complete!`);
         }
       }
     } catch (error) {
