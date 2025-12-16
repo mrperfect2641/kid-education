@@ -1,20 +1,26 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ecoActionsApi, quizzesApi, quizAttemptsApi, challengeProgressApi } from '@/db/api';
+import { ecoActionsApi, quizzesApi, quizAttemptsApi, challengeProgressApi, challengesApi, profilesApi } from '@/db/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, Upload, BookOpen, Users, FileText, Gamepad2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Award, Upload, BookOpen, Users, FileText, Gamepad2, Trophy, CheckCircle, XCircle, Clock, Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { EcoActionWithDetails, QuizWithQuestions } from '@/types/types';
+import type { EcoActionWithDetails, QuizWithQuestions, Challenge } from '@/types/types';
 
 export default function TeacherDashboard() {
   const [pendingActions, setPendingActions] = useState<EcoActionWithDetails[]>([]);
+  const [allEcoActions, setAllEcoActions] = useState<EcoActionWithDetails[]>([]);
   const [quizzes, setQuizzes] = useState<QuizWithQuestions[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [quizResults, setQuizResults] = useState<any[]>([]);
   const [gameResults, setGameResults] = useState<any[]>([]);
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     loadData();
@@ -22,18 +28,47 @@ export default function TeacherDashboard() {
 
   const loadData = async () => {
     try {
-      const [actionsData, quizzesData, attemptsData, progressData] = await Promise.all([
+      const [actionsData, quizzesData, attemptsData, progressData, challengesData, allActionsData, studentsData] = await Promise.all([
         ecoActionsApi.getPendingActions(),
         quizzesApi.getAllQuizzes(),
         quizAttemptsApi.getAllAttempts(),
         challengeProgressApi.getAllProgress(),
+        challengesApi.getAllChallenges(),
+        ecoActionsApi.getAllActions(),
+        profilesApi.getAllProfiles(),
       ]);
+      
       setPendingActions(actionsData);
+      setAllEcoActions(allActionsData);
       setQuizzes(quizzesData);
-      setQuizResults(attemptsData.slice(0, 10));
-      setGameResults(progressData.slice(0, 10));
+      setChallenges(challengesData);
+      setQuizResults(attemptsData);
+      setGameResults(progressData);
+      
+      // Calculate leaderboard data
+      const students = studentsData.filter(p => p.role === 'student');
+      const leaderboard = students
+        .map(student => {
+          const quizAttempts = attemptsData.filter(a => a.student_id === student.id);
+          const gameProgress = progressData.filter(g => g.student_id === student.id);
+          const completedGames = gameProgress.filter(g => g.completed).length;
+          
+          return {
+            ...student,
+            quizAttempts: quizAttempts.length,
+            gamesPlayed: gameProgress.length,
+            gamesCompleted: completedGames,
+            avgQuizScore: quizAttempts.length > 0 
+              ? (quizAttempts.reduce((sum, a) => sum + (a.score / a.total_questions * 100), 0) / quizAttempts.length).toFixed(1)
+              : 0,
+          };
+        })
+        .sort((a, b) => b.total_points - a.total_points);
+      
+      setLeaderboardData(leaderboard);
     } catch (error) {
       console.error('Error loading data:', error);
+      toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -116,7 +151,7 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold gradient-text">Teacher Dashboard</h1>
@@ -124,14 +159,14 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
         </div>
         <Button onClick={generateStudentReport}>
           <FileText className="w-4 h-4 mr-2" />
-          Generate Student Report
+          Generate Report
         </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">My Quizzes</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Quizzes</CardTitle>
             <Award className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -140,8 +175,17 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Games</CardTitle>
+            <Gamepad2 className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{challenges.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Pending Reviews</CardTitle>
-            <Upload className="w-4 h-4 text-muted-foreground" />
+            <Clock className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingActions.length}</div>
@@ -149,180 +193,346 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Quiz Attempts</CardTitle>
-            <FileText className="w-4 h-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <Users className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{quizResults.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Game Completions</CardTitle>
-            <Gamepad2 className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{gameResults.length}</div>
+            <div className="text-2xl font-bold">{leaderboardData.length}</div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-elegant">
-          <CardHeader>
-            <CardTitle>Content Management</CardTitle>
-            <CardDescription>Create and manage educational content</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button asChild className="w-full" variant="outline">
-              <Link to="/quizzes">
-                <Award className="w-4 h-4 mr-2" />
-                Add/Edit Quizzes
-              </Link>
-            </Button>
-            <Button asChild className="w-full" variant="outline">
-              <Link to="/challenges">
-                <Gamepad2 className="w-4 h-4 mr-2" />
-                Add/Edit Games
-              </Link>
-            </Button>
-            <Button asChild className="w-full" variant="outline">
-              <Link to="/learn">
-                <BookOpen className="w-4 h-4 mr-2" />
-                Add/Edit Learning Modules
-              </Link>
-            </Button>
-            <Button asChild className="w-full" variant="outline">
-              <Link to="/leaderboard">
-                <Users className="w-4 h-4 mr-2" />
-                View Student Leaderboard
-              </Link>
-            </Button>
-            <Button asChild className="w-full" variant="outline">
-              <Link to="/eco-actions">
-                <Upload className="w-4 h-4 mr-2" />
-                View Eco-Actions
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="quizzes">Manage Quizzes</TabsTrigger>
+          <TabsTrigger value="games">Manage Games</TabsTrigger>
+          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+        </TabsList>
 
-        <Card className="shadow-elegant">
-          <CardHeader>
-            <CardTitle>Pending Eco-Actions</CardTitle>
-            <CardDescription>Review student submissions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {pendingActions.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No pending reviews</p>
-            ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {pendingActions.slice(0, 5).map((action) => (
-                  <div key={action.id} className="border rounded-lg p-3 space-y-2">
-                    <div>
-                      <p className="font-medium text-sm">{action.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        By {action.student?.username}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleReviewAction(action.id, 'approved')}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleReviewAction(action.id, 'rejected')}
-                      >
-                        Reject
-                      </Button>
-                    </div>
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Quiz Results</CardTitle>
+                <CardDescription>Latest student quiz attempts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {quizResults.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No quiz results yet</p>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {quizResults.slice(0, 10).map((result: any) => (
+                      <div key={result.id} className="flex items-center justify-between p-3 rounded-lg bg-accent">
+                        <div>
+                          <p className="font-medium text-sm">{result.student?.username || 'Unknown'}</p>
+                          <p className="text-xs text-muted-foreground">{result.quiz?.title || 'Unknown Quiz'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">{result.score}/{result.total_questions}</p>
+                          <p className="text-xs text-muted-foreground">{result.points_earned} pts</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Game Results</CardTitle>
+                <CardDescription>Latest student game completions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {gameResults.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No game results yet</p>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {gameResults.slice(0, 10).map((result: any) => (
+                      <div key={result.id} className="flex items-center justify-between p-3 rounded-lg bg-accent">
+                        <div>
+                          <p className="font-medium text-sm">{result.student?.username || 'Unknown'}</p>
+                          <p className="text-xs text-muted-foreground">{result.challenge?.title || 'Unknown Game'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">{result.score}%</p>
+                          <Badge variant={result.completed ? 'default' : 'secondary'} className="text-xs">
+                            {result.completed ? 'Completed' : 'In Progress'}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Eco-Actions</CardTitle>
+              <CardDescription>Review and approve student submissions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {pendingActions.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No pending reviews</p>
+              ) : (
+                <div className="space-y-4">
+                  {pendingActions.map((action) => (
+                    <div key={action.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium">{action.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            By {action.student?.username} • {action.action_type}
+                          </p>
+                          {action.description && (
+                            <p className="text-sm mt-2">{action.description}</p>
+                          )}
+                        </div>
+                        <Badge variant="secondary">Pending</Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleReviewAction(action.id, 'approved')}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleReviewAction(action.id, 'rejected')}
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Manage Quizzes Tab */}
+        <TabsContent value="quizzes" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Quiz Management</CardTitle>
+                <CardDescription>Add, edit, or delete quizzes</CardDescription>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              <Button asChild>
+                <Link to="/quizzes">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Quiz
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {quizzes.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No quizzes created yet</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Quiz Title</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Questions</TableHead>
+                      <TableHead>Attempts</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {quizzes.map((quiz) => {
+                      const attempts = quizResults.filter(r => r.quiz_id === quiz.id).length;
+                      return (
+                        <TableRow key={quiz.id}>
+                          <TableCell className="font-medium">{quiz.title}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{quiz.topic?.title || 'General'}</Badge>
+                          </TableCell>
+                          <TableCell>{quiz.questions?.length || 0}</TableCell>
+                          <TableCell>{attempts}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" asChild>
+                                <Link to={`/quiz/${quiz.id}`}>
+                                  <Edit className="w-4 h-4" />
+                                </Link>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <Card className="shadow-elegant">
-        <CardHeader>
-          <CardTitle>Recent Quiz Results</CardTitle>
-          <CardDescription>Student quiz performance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {quizResults.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No quiz results yet</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Quiz</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>Points Earned</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {quizResults.map((result: any) => (
-                  <TableRow key={result.id}>
-                    <TableCell>{result.student?.username || 'Unknown'}</TableCell>
-                    <TableCell>{result.quiz?.title || 'Unknown Quiz'}</TableCell>
-                    <TableCell>{result.score}/{result.total_questions}</TableCell>
-                    <TableCell className="text-primary font-medium">{result.points_earned}</TableCell>
-                    <TableCell>{new Date(result.completed_at).toLocaleDateString()}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+        {/* Manage Games Tab */}
+        <TabsContent value="games" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Game Management</CardTitle>
+                <CardDescription>Add, edit, or delete games/challenges</CardDescription>
+              </div>
+              <Button asChild>
+                <Link to="/challenges">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Game
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {challenges.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No games created yet</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Game Title</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Points</TableHead>
+                      <TableHead>Completions</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {challenges.map((challenge) => {
+                      const completions = gameResults.filter(r => r.challenge_id === challenge.id && r.completed).length;
+                      return (
+                        <TableRow key={challenge.id}>
+                          <TableCell className="font-medium">{challenge.title}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{challenge.challenge_type}</Badge>
+                          </TableCell>
+                          <TableCell className="text-primary font-medium">{challenge.points_reward}</TableCell>
+                          <TableCell>{completions}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" asChild>
+                                <Link to={`/challenge/${challenge.id}`}>
+                                  <Edit className="w-4 h-4" />
+                                </Link>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <Card className="shadow-elegant">
-        <CardHeader>
-          <CardTitle>Recent Game Results</CardTitle>
-          <CardDescription>Student game performance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {gameResults.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No game results yet</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Game</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Points Earned</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {gameResults.map((result: any) => (
-                  <TableRow key={result.id}>
-                    <TableCell>{result.student?.username || 'Unknown'}</TableCell>
-                    <TableCell>{result.challenge?.title || 'Unknown Game'}</TableCell>
-                    <TableCell>{result.score}%</TableCell>
-                    <TableCell>
-                      {result.completed ? (
-                        <span className="text-success">✓ Completed</span>
-                      ) : (
-                        <span className="text-muted-foreground">In Progress</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-primary font-medium">{result.points_earned}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+        {/* Leaderboard Tab */}
+        <TabsContent value="leaderboard" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Student Leaderboard</CardTitle>
+              <CardDescription>View student performance and rankings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {leaderboardData.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No student data available</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Rank</TableHead>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Total Points</TableHead>
+                      <TableHead>Quiz Attempts</TableHead>
+                      <TableHead>Avg Quiz Score</TableHead>
+                      <TableHead>Games Played</TableHead>
+                      <TableHead>Games Completed</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {leaderboardData.map((student, index) => (
+                      <TableRow key={student.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {index < 3 && <Trophy className={`w-4 h-4 ${
+                              index === 0 ? 'text-yellow-500' : 
+                              index === 1 ? 'text-gray-400' : 
+                              'text-amber-600'
+                            }`} />}
+                            <span className="font-bold">#{index + 1}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{student.username}</TableCell>
+                        <TableCell className="text-primary font-bold">{student.total_points}</TableCell>
+                        <TableCell>{student.quizAttempts}</TableCell>
+                        <TableCell>{student.avgQuizScore}%</TableCell>
+                        <TableCell>{student.gamesPlayed}</TableCell>
+                        <TableCell>{student.gamesCompleted}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>All Eco-Actions</CardTitle>
+              <CardDescription>View all submitted eco-actions by students</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {allEcoActions.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No eco-actions submitted yet</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allEcoActions.map((action) => (
+                      <TableRow key={action.id}>
+                        <TableCell className="font-medium">{action.student?.username || 'Unknown'}</TableCell>
+                        <TableCell>{action.title}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{action.action_type}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            action.status === 'approved' ? 'default' : 
+                            action.status === 'rejected' ? 'destructive' : 
+                            'secondary'
+                          }>
+                            {action.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(action.submitted_at).toLocaleDateString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
