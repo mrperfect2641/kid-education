@@ -76,6 +76,7 @@ export default function Header() {
         { name: 'Dashboard', path: '/teacher', icon: LayoutDashboard },
         { name: 'Manage Quizzes', path: '/teacher?tab=quizzes', icon: Award },
         { name: 'Manage Games', path: '/teacher?tab=games', icon: Gamepad2 },
+        { name: 'Learning Modules', path: '/teacher?tab=modules', icon: BookOpen },
         { name: 'Leaderboard', path: '/teacher?tab=leaderboard', icon: Trophy },
         { name: 'Eco Actions', path: '/teacher?tab=overview', icon: Upload },
       ];

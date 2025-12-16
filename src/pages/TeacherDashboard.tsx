@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ecoActionsApi, quizzesApi, quizAttemptsApi, challengeProgressApi, challengesApi, profilesApi } from '@/db/api';
+import { ecoActionsApi, quizzesApi, quizAttemptsApi, challengeProgressApi, challengesApi, profilesApi, topicsApi } from '@/db/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,7 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Award, Upload, BookOpen, Users, FileText, Gamepad2, Trophy, CheckCircle, XCircle, Clock, Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { EcoActionWithDetails, QuizWithQuestions, Challenge } from '@/types/types';
+import CreateQuizDialog from '@/components/teacher/CreateQuizDialog';
+import CreateGameDialog from '@/components/teacher/CreateGameDialog';
+import CreateModuleDialog from '@/components/teacher/CreateModuleDialog';
+import type { EcoActionWithDetails, QuizWithQuestions, Challenge, Topic } from '@/types/types';
 
 export default function TeacherDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,6 +20,7 @@ export default function TeacherDashboard() {
   const [allEcoActions, setAllEcoActions] = useState<EcoActionWithDetails[]>([]);
   const [quizzes, setQuizzes] = useState<QuizWithQuestions[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [quizResults, setQuizResults] = useState<any[]>([]);
   const [gameResults, setGameResults] = useState<any[]>([]);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
@@ -35,7 +39,7 @@ export default function TeacherDashboard() {
 
   const loadData = async () => {
     try {
-      const [actionsData, quizzesData, attemptsData, progressData, challengesData, allActionsData, studentsData] = await Promise.all([
+      const [actionsData, quizzesData, attemptsData, progressData, challengesData, allActionsData, studentsData, topicsData] = await Promise.all([
         ecoActionsApi.getPendingActions(),
         quizzesApi.getAllQuizzes(),
         quizAttemptsApi.getAllAttempts(),
@@ -43,12 +47,14 @@ export default function TeacherDashboard() {
         challengesApi.getAllChallenges(),
         ecoActionsApi.getAllActions(),
         profilesApi.getAllProfiles(),
+        topicsApi.getAllTopics(),
       ]);
       
       setPendingActions(actionsData);
       setAllEcoActions(allActionsData);
       setQuizzes(quizzesData);
       setChallenges(challengesData);
+      setTopics(topicsData);
       setQuizResults(attemptsData);
       setGameResults(progressData);
       
@@ -92,6 +98,21 @@ export default function TeacherDashboard() {
     } catch (error) {
       console.error('Error reviewing action:', error);
       toast.error('Failed to review eco-action');
+    }
+  };
+
+  const handleDeleteTopic = async (topicId: string) => {
+    if (!confirm('Are you sure you want to delete this learning module?')) {
+      return;
+    }
+
+    try {
+      await topicsApi.deleteTopic(topicId);
+      toast.success('Learning module deleted successfully');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting topic:', error);
+      toast.error('Failed to delete learning module');
     }
   };
 
@@ -210,10 +231,11 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="quizzes">Manage Quizzes</TabsTrigger>
           <TabsTrigger value="games">Manage Games</TabsTrigger>
+          <TabsTrigger value="modules">Learning Modules</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
         </TabsList>
 
@@ -334,12 +356,7 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
                 <CardTitle>Quiz Management</CardTitle>
                 <CardDescription>Add, edit, or delete quizzes</CardDescription>
               </div>
-              <Button asChild>
-                <Link to="/quizzes">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Quiz
-                </Link>
-              </Button>
+              <CreateQuizDialog onSuccess={loadData} />
             </CardHeader>
             <CardContent>
               {quizzes.length === 0 ? (
@@ -393,12 +410,7 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
                 <CardTitle>Game Management</CardTitle>
                 <CardDescription>Add, edit, or delete games/challenges</CardDescription>
               </div>
-              <Button asChild>
-                <Link to="/challenges">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Game
-                </Link>
-              </Button>
+              <CreateGameDialog onSuccess={loadData} />
             </CardHeader>
             <CardContent>
               {challenges.length === 0 ? (
@@ -531,6 +543,64 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
                           </Badge>
                         </TableCell>
                         <TableCell>{new Date(action.submitted_at).toLocaleDateString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Learning Modules Tab */}
+        <TabsContent value="modules" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Learning Modules Management</CardTitle>
+                <CardDescription>Add, edit, or delete educational content</CardDescription>
+              </div>
+              <CreateModuleDialog onSuccess={loadData} />
+            </CardHeader>
+            <CardContent>
+              {topics.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No learning modules created yet</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Module Title</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topics.map((topic) => (
+                      <TableRow key={topic.id}>
+                        <TableCell className="font-medium">{topic.title}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{topic.icon || 'General'}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(topic.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" asChild>
+                              <Link to={`/learn/${topic.id}`}>
+                                <Edit className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteTopic(topic.id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

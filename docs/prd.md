@@ -22,24 +22,37 @@ A web-based learning system that combines environmental education with gamificat
 - Display educational lessons on environmental topics: pollution, recycling, climate change, renewable energy, etc.
 - Interactive quizzes with multiple-choice questions (MCQs), puzzles\n- Students earn eco-points for correct answers
 - Track quiz completion and scores
-- Student dashboard includes3-4 fully functional quizzes with questions ready to play
+- Student dashboard displays all quizzes added by teachers
+- Quizzes dynamically appear in student dashboard when teachers add them
 \n### 3.3 Module 3: Game / Challenge Module
 - Fun mini-tasks and challenges:'Sort the waste,' 'Save the trees,' 'Clean the ocean'\n- Fully working interactive games using HTML and JavaScript
 - Games are added and managed by teachers
 - Progress tracking for each game/challenge
 - Award badges upon completion of challenges
-- Student dashboard includes fully functional games\n
+- Student dashboard displays all games added by teachers
+- Games dynamically appear in student dashboard when teachers add them
+
 ### 3.4 Module 4: Leaderboard & Rewards Module
 - Display top-performing students ranked by eco-points
 - Award badges and certificates for milestones (e.g., 'Green Hero,' 'Eco Star')
 - Encourage healthy competition among students
 - View personal ranking and achievements
 \n### 3.5 Module 5: Teacher Dashboard
-- Add and edit information in learning modules
-- Create, edit, and manage quizzes and games for students
-- Add new quizzes and lessons
-- Edit existing quizzes and games
-- Conduct games and quizzes for students
+- **Add and manage learning modules:**
+  - Create new learning modules with environmental topics
+  - Edit existing learning module content
+  - Add or remove information in learning modules
+  - Update module descriptions and educational materials
+- **Create and manage quizzes:**
+  - Add new quizzes with questions and answer options
+  - Edit existing quizzes
+  - Delete quizzes
+  - Added quizzes automatically appear in student dashboard
+- **Create and manage games:**
+  - Add new games and challenges
+  - Edit existing games\n  - Delete games
+  - Added games automatically appear in student dashboard
+- Conduct quizzes and games for students
 - View class leaderboard of students
 - Generate performance reports and results of students
 - View and approve eco-actions submitted by students
@@ -50,8 +63,7 @@ A web-based learning system that combines environmental education with gamificat
 - Students log real-world environmental activities (planting trees, using reusable bottles, etc.)
 - Upload images or descriptions of eco-actions
 - Admin/teacher verification of submitted activities
-- Bonus eco-points awarded upon approval
-- Encourage real environmental action beyond digital learning
+- Bonus eco-points awarded upon approval\n- Encourage real environmental action beyond digital learning
 
 ### 3.7 Admin Dashboard
 - Manage user accounts, specifically student accounts
@@ -66,22 +78,33 @@ A web-based learning system that combines environmental education with gamificat
 
 ### 4.1 Student\n- Register with email ID and select Student role
 - Login with email, password, and Student role selection → redirected to Student Dashboard
-- Take quizzes and earn eco-points (3-4 quizzes available with questions)\n- Play fully functional games and complete challenges
-- View leaderboard and personal ranking
+- Take quizzes and earn eco-points (all quizzes added by teachers are available)\n- Play fully functional games and complete challenges (all games added by teachers are available)\n- View leaderboard and personal ranking
 - Submit real-life eco-actions for verification
 - Track progress and view earned badges
-- View learning modules\n
-### 4.2 Teacher
+- View learning modules created and managed by teachers
+\n### 4.2 Teacher
 - Register with email ID and select Teacher role
 - Login with email, password, and Teacher role selection → redirected to Teacher Dashboard
-- Add and edit information in learning modules
-- Create, edit, and manage quizzes, games, and lessons
+- **Manage learning modules:**
+  - Add new learning modules
+  - Edit existing learning module information
+  - Remove or update module content
+- **Manage quizzes:**
+  - Create new quizzes with questions\n  - Edit existing quizzes
+  - Delete quizzes
+  - Quizzes automatically appear in student dashboard upon creation
+- **Manage games:**
+  - Add new games and challenges
+  - Edit existing games
+  - Delete games
+  - Games automatically appear in student dashboard upon creation
 - Conduct games and quizzes for students
 - View class leaderboard of students
 - Generate results and performance reports of students
 - View and approve eco-actions submitted by students
 - Monitor student performance, quiz results, and game results
-- No access to play games or take quizzes\n\n### 4.3 Admin
+- No access to play games or take quizzes\n
+### 4.3 Admin
 - Register with email ID and select Admin role
 - Login with email, password, and Admin role selection → redirected to Admin Dashboard
 - Manage student user accounts
@@ -90,7 +113,8 @@ A web-based learning system that combines environmental education with gamificat
 - Handle system reports and feedback
 - Maintain and update content, quizzes, and lessons
 - Manage class leaderboards
-- Approve real-life eco-actions\n- No option to play quizzes, games, view leaderboard as a participant, or access learning modules as a student\n
+- Approve real-life eco-actions\n- No option to play quizzes, games, view leaderboard as a participant, or access learning modules as a student
+
 ### 4.4 External Verifier (Optional)
 - Validate real-life eco-actions submitted by students
 - Provide additional verification layer for eco-activities
@@ -106,13 +130,26 @@ A web-based learning system that combines environmental education with gamificat
 
 ### 5.2 Student Dashboard
 - Overview of platform features\n- Eco-points summary
-- Quick access to quizzes, games, and leaderboard
-- View learning modules
-- Submit eco-actions
-- Track personal progress and badges
-\n### 5.3 Teacher Dashboard
-- Add and edit learning module information
-- Create, edit, and manage quizzes and games\n- View class leaderboard
+- Quick access to all quizzes and games added by teachers
+- View learning modules created by teachers
+- Access to leaderboard
+- Submit eco-actions\n- Track personal progress and badges
+- Dynamically updated when teachers add new quizzes or games
+
+### 5.3 Teacher Dashboard
+- **Learning Module Management Section:**
+  - Add new learning modules
+  - Edit existing module content
+  - Remove or update information in modules
+- **Quiz Management Section:**
+  - Create new quizzes\n  - Edit existing quizzes
+  - Delete quizzes
+  - View list of all created quizzes
+- **Game Management Section:**
+  - Add new games
+  - Edit existing games
+  - Delete games\n  - View list of all created games
+- View class leaderboard
 - Generate student results and performance reports
 - View eco-actions submitted by students
 - Approve or reject eco-actions
@@ -130,14 +167,14 @@ A web-based learning system that combines environmental education with gamificat
 - Multiple-choice options
 - Submit answers and view results
 - Eco-points earned display
-- Student dashboard includes 3-4 quizzes with questions ready to play
-
-### 5.6 Game / Challenge Page
+- All quizzes added by teachers are accessible
+\n### 5.6 Game / Challenge Page
 - Fully functional interactive learning games and missions
 - Challenge instructions and objectives
 - Progress tracking\n- Badge awards upon completion
-- Games managed by teachers
-\n### 5.7 Leaderboard Page
+- All games added by teachers are accessible
+
+### 5.7 Leaderboard Page
 - Display top students ranked by eco-points
 - Personal ranking display
 - Filter by class or overall\n\n### 5.8 Activity Submission Page
@@ -158,9 +195,9 @@ A web-based learning system that combines environmental education with gamificat
 - RESTful API design
 - Session management and authentication
 - Role-based access control and dashboard routing
+- Dynamic content loading for quizzes and games
 
-### 6.3 Database
-- MySQL database\n- Tables for users (with email as username and role field), quizzes, games, eco-points, badges, activities, leaderboard\n- Secure database connection\n
+### 6.3 Database\n- MySQL database\n- Tables for users (with email as username and role field), learning modules, quizzes, games, eco-points, badges, activities, leaderboard\n- Secure database connection\n
 ### 6.4 Authentication
 - Email and password-based authentication
 - Role-based access control (Student/Teacher/Admin)
@@ -175,3 +212,7 @@ A web-based learning system that combines environmental education with gamificat
 
 ## 8. Reference Diagram
 Use case diagram provided by user: Screenshot2025-10-30 153656.png showing relationships between Admin, Teacher, Student, and External Verifier with the Gamified Environmental Education Platform system.
+
+## 9. Reference Images
+- Screenshot 2025-10-30 153656.png: Use case diagram with relationships
+- image.png: Error message display example for role-based login validation
