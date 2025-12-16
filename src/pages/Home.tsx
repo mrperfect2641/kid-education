@@ -118,60 +118,80 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-elegant hover:shadow-glow transition-smooth">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Points</CardTitle>
-            <TrendingUp className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-primary">{profile.total_points}</div>
-            <Progress value={progressToNext} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-2">
-              {nextMilestone - profile.total_points} points to next milestone
-            </p>
-          </CardContent>
-        </Card>
+      {/* Statistics cards - different for admins vs students/teachers */}
+      {profile.role === 'admin' ? (
+        // Admin only sees role card
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Role</CardTitle>
+              <Leaf className="w-4 h-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary capitalize">{profile.role}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Your platform access level
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        // Students and teachers see all stats
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Total Points</CardTitle>
+              <TrendingUp className="w-4 h-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">{profile.total_points}</div>
+              <Progress value={progressToNext} className="mt-2" />
+              <p className="text-xs text-muted-foreground mt-2">
+                {nextMilestone - profile.total_points} points to next milestone
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="shadow-elegant hover:shadow-glow transition-smooth">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Leaderboard Rank</CardTitle>
-            <Trophy className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-primary">#{rank?.rank || '-'}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {rank ? 'Keep climbing!' : 'Complete activities to rank'}
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Leaderboard Rank</CardTitle>
+              <Trophy className="w-4 h-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">#{rank?.rank || '-'}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {rank ? 'Keep climbing!' : 'Complete activities to rank'}
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="shadow-elegant hover:shadow-glow transition-smooth">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Badges Earned</CardTitle>
-            <Award className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-primary">{userBadges}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Collect more achievements
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Badges Earned</CardTitle>
+              <Award className="w-4 h-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">{userBadges}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Collect more achievements
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="shadow-elegant hover:shadow-glow transition-smooth">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Role</CardTitle>
-            <Leaf className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary capitalize">{profile.role}</div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Your platform access level
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Role</CardTitle>
+              <Leaf className="w-4 h-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary capitalize">{profile.role}</div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Your platform access level
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Show learning activities only for students and teachers, not admins */}
       {profile.role !== 'admin' && (
