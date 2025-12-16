@@ -82,15 +82,12 @@ export default function Header() {
       ];
     }
 
-    // Admin navigation - full access
+    // Admin navigation - management only, no learning activities
     if (profile.role === 'admin') {
       return [
         { name: 'Home', path: '/', icon: LayoutDashboard },
-        { name: 'Learn', path: '/learn', icon: BookOpen },
-        { name: 'Quizzes', path: '/quizzes', icon: Award },
-        { name: 'Challenges', path: '/challenges', icon: Gamepad2 },
         { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
-        { name: 'Admin Dashboard', path: '/admin', icon: LayoutDashboard },
+        { name: 'Admin Dashboard', path: '/admin', icon: User },
       ];
     }
 
