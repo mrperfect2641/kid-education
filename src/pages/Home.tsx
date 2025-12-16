@@ -173,58 +173,100 @@ export default function Home() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="shadow-elegant hover:shadow-glow transition-smooth">
-          <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <BookOpen className="w-6 h-6 text-primary" />
-            </div>
-            <CardTitle>Learning Modules</CardTitle>
-            <CardDescription>
-              Explore environmental topics and expand your knowledge
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/learn">Start Learning</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      {/* Show learning activities only for students and teachers, not admins */}
+      {profile.role !== 'admin' && (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <BookOpen className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle>Learning Modules</CardTitle>
+              <CardDescription>
+                Explore environmental topics and expand your knowledge
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/learn">Start Learning</Link>
+              </Button>
+            </CardContent>
+          </Card>
 
-        <Card className="shadow-elegant hover:shadow-glow transition-smooth">
-          <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Award className="w-6 h-6 text-primary" />
-            </div>
-            <CardTitle>Take Quizzes</CardTitle>
-            <CardDescription>
-              Test your knowledge and earn eco-points
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/quizzes">View Quizzes</Link>
-            </Button>
-          </CardContent>
-        </Card>
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <Award className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle>Take Quizzes</CardTitle>
+              <CardDescription>
+                Test your knowledge and earn eco-points
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/quizzes">View Quizzes</Link>
+              </Button>
+            </CardContent>
+          </Card>
 
-        <Card className="shadow-elegant hover:shadow-glow transition-smooth">
-          <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Gamepad2 className="w-6 h-6 text-primary" />
-            </div>
-            <CardTitle>Play Challenges</CardTitle>
-            <CardDescription>
-              Complete fun interactive environmental challenges
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/challenges">Play Now</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <Gamepad2 className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle>Play Challenges</CardTitle>
+              <CardDescription>
+                Complete fun interactive environmental challenges
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/challenges">Play Now</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Show admin-specific quick actions */}
+      {profile.role === 'admin' && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <Trophy className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle>View Leaderboard</CardTitle>
+              <CardDescription>
+                Check student rankings and performance metrics
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/leaderboard">View Rankings</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-elegant hover:shadow-glow transition-smooth">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                <Upload className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle>Admin Dashboard</CardTitle>
+              <CardDescription>
+                Manage users, review eco-actions, and generate reports
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link to="/admin">Go to Dashboard</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
