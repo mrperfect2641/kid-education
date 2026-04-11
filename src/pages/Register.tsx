@@ -51,7 +51,7 @@ export default function Register() {
 
     try {
       const authEmail = `${username}@miaoda.com`;
-      
+
       const { data, error } = await supabase.auth.signUp({
         email: authEmail,
         password,
@@ -135,12 +135,8 @@ export default function Register() {
                 <SelectContent>
                   <SelectItem value="student">Student</SelectItem>
                   <SelectItem value="teacher">Teacher</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Note: Admin role requires approval after registration
-              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password *</Label>

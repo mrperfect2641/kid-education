@@ -82,12 +82,16 @@ export default function Header() {
       ];
     }
 
-    // Admin navigation - management only, no learning activities
+    // Admin navigation - all modules available via tabs
     if (profile.role === 'admin') {
       return [
-        { name: 'Home', path: '/', icon: LayoutDashboard },
-        { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
-        { name: 'Admin Dashboard', path: '/admin', icon: User },
+        { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+        { name: 'User Management', path: '/admin?tab=users', icon: User },
+        { name: 'Manage Quizzes', path: '/admin?tab=quizzes', icon: Award },
+        { name: 'Manage Games', path: '/admin?tab=games', icon: Gamepad2 },
+        { name: 'Learning Modules', path: '/admin?tab=modules', icon: BookOpen },
+        { name: 'Leaderboard', path: '/admin?tab=leaderboard', icon: Trophy },
+        { name: 'Eco Actions', path: '/admin?tab=eco-actions', icon: Upload },
       ];
     }
 
@@ -106,11 +110,10 @@ export default function Header() {
             key={item.path}
             to={item.path}
             onClick={() => mobile && setIsMenuOpen(false)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-smooth ${
-              isActive
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-smooth ${isActive
                 ? 'bg-primary text-primary-foreground'
                 : 'text-foreground hover:bg-accent'
-            } ${mobile ? 'w-full' : ''}`}
+              } ${mobile ? 'w-full' : ''}`}
           >
             <Icon className="w-4 h-4" />
             <span className={mobile ? 'text-base' : 'text-sm font-medium'}>{item.name}</span>

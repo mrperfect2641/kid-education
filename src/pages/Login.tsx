@@ -20,7 +20,7 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!username || !password) {
       toast.error('Please enter both username and password');
       return;
@@ -44,7 +44,7 @@ export default function Login() {
 
       if (data.user) {
         const profile = await profilesApi.getProfile(data.user.id);
-        
+
         if (!profile) {
           toast.error('Profile not found. Please contact administrator.');
           await supabase.auth.signOut();
@@ -62,7 +62,7 @@ export default function Login() {
         }
 
         toast.success(`Welcome back, ${profile.username}!`);
-        
+
         // Route based on the selected role (which matches registered role)
         if (selectedRole === 'admin') {
           navigate('/admin');
@@ -129,7 +129,6 @@ export default function Login() {
                 <SelectContent>
                   <SelectItem value="student">Student</SelectItem>
                   <SelectItem value="teacher">Teacher</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">Select the role you registered with</p>
@@ -146,12 +145,19 @@ export default function Login() {
                 'Sign In'
               )}
             </Button>
-            <p className="text-sm text-center text-muted-foreground">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-primary hover:underline font-medium">
-                Register here
-              </Link>
-            </p>
+            <div className="flex flex-col space-y-2 text-sm text-center text-muted-foreground w-full">
+              <p>
+                Don't have an account?{' '}
+                <Link to="/register" className="text-primary hover:underline font-medium">
+                  Register here
+                </Link>
+              </p>
+              <div className="pt-2 border-t flex justify-center mt-2">
+                <Link to="/admin-login" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                  Administrator Login
+                </Link>
+              </div>
+            </div>
           </CardFooter>
         </form>
       </Card>

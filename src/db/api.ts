@@ -65,6 +65,15 @@ export const profilesApi = {
     if (error) throw error;
     return Array.isArray(data) ? data as Profile[] : [];
   },
+
+  async deleteProfile(id: string) {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
 };
 
 export const topicsApi = {

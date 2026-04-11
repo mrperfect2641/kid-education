@@ -15,6 +15,7 @@ import Leaderboard from './pages/Leaderboard';
 import EcoActions from './pages/EcoActions';
 import TeacherDashboard from './pages/TeacherDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin';
 import NotFound from './pages/NotFound';
 
 interface RouteConfig {
@@ -39,6 +40,12 @@ const routes: RouteConfig[] = [
     name: 'Login',
     path: '/login',
     element: <Login />,
+    visible: false,
+  },
+  {
+    name: 'Admin Login',
+    path: '/admin-login',
+    element: <AdminLogin />,
     visible: false,
   },
   {
