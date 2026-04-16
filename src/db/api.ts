@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { authStore } from "@/lib/auth";
 import type {
   Profile,
   Topic,
@@ -16,538 +16,274 @@ import type {
 } from '@/types/types';
 
 const PAGE_SIZE = 20;
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = authStore.getToken();
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || `Request failed with ${response.status}`);
+  }
+  if (response.status === 204) return undefined as T;
+  return response.json() as Promise<T>;
+}
 
 export const profilesApi = {
   async getCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = authStore.getUser();
     if (!user) return null;
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Profile | null;
+    const data = await request<Profile>(`/profiles/${user.id}`);
+    return data;
   },
 
   async getProfile(id: string) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Profile | null;
+    return request<Profile | null>(`/profiles/${id}`);
   },
 
   async updateProfile(id: string, updates: Partial<Profile>) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Profile;
+    return request<Profile>(`/profiles/${id}`, { method: "PUT", body: JSON.stringify(updates) });
   },
 
   async getAllProfiles(page = 0) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as Profile[] : [];
+    const data = await request<Profile[]>("/profiles");
+    return data.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async deleteProfile(id: string) {
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await request<void>(`/profiles/${id}`, { method: "DELETE" });
   },
 };
 
 export const topicsApi = {
   async getAllTopics() {
-    const { data, error } = await supabase
-      .from('topics')
-      .select('*')
-      .order('order_index', { ascending: true });
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as Topic[] : [];
+    return request<Topic[]>("/topics");
   },
 
   async getTopic(id: string) {
-    const { data, error } = await supabase
-      .from('topics')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Topic | null;
+    return request<Topic | null>(`/topics/${id}`);
   },
 
   async createTopic(topic: Omit<Topic, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
-      .from('topics')
-      .insert(topic)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Topic;
+    return request<Topic>("/topics", { method: "POST", body: JSON.stringify(topic) });
   },
 
   async updateTopic(id: string, updates: Partial<Topic>) {
-    const { data, error } = await supabase
-      .from('topics')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Topic;
+    return request<Topic>(`/topics/${id}`, { method: "PUT", body: JSON.stringify(updates) });
   },
 
   async deleteTopic(id: string) {
-    const { error } = await supabase
-      .from('topics')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await request<void>(`/topics/${id}`, { method: "DELETE" });
   },
 };
 
 export const quizzesApi = {
   async getAllQuizzes(page = 0) {
-    const { data, error } = await supabase
-      .from('quizzes')
-      .select('*, topic:topics(*)')
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as QuizWithQuestions[] : [];
+    const data = await request<QuizWithQuestions[]>("/quizzes");
+    return data.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async getQuiz(id: string) {
-    const { data, error } = await supabase
-      .from('quizzes')
-      .select('*, topic:topics(*)')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as QuizWithQuestions | null;
+    return request<QuizWithQuestions | null>(`/quizzes/${id}`);
   },
 
   async getQuizWithQuestions(id: string) {
-    const { data, error } = await supabase
-      .from('quizzes')
-      .select('*, questions:quiz_questions(*), topic:topics(*)')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as QuizWithQuestions | null;
+    return request<QuizWithQuestions | null>(`/quizzes/${id}`);
   },
 
   async createQuiz(quiz: Omit<Quiz, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
-      .from('quizzes')
-      .insert(quiz)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Quiz;
+    return request<Quiz>("/quizzes", { method: "POST", body: JSON.stringify(quiz) });
   },
 
   async updateQuiz(id: string, updates: Partial<Quiz>) {
-    const { data, error } = await supabase
-      .from('quizzes')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Quiz;
+    return request<Quiz>(`/quizzes/${id}`, { method: "PUT", body: JSON.stringify(updates) });
   },
 
   async deleteQuiz(id: string) {
-    const { error } = await supabase
-      .from('quizzes')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await request<void>(`/quizzes/${id}`, { method: "DELETE" });
   },
 };
 
 export const quizQuestionsApi = {
   async getQuestionsByQuizId(quizId: string) {
-    const { data, error } = await supabase
-      .from('quiz_questions')
-      .select('*')
-      .eq('quiz_id', quizId)
-      .order('order_index', { ascending: true });
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as QuizQuestion[] : [];
+    const data = await request<QuizQuestion[]>("/quiz_questions");
+    return data.filter((item) => item.quiz_id === quizId);
   },
 
   async createQuestion(question: Omit<QuizQuestion, 'id' | 'created_at'>) {
-    const { data, error } = await supabase
-      .from('quiz_questions')
-      .insert(question)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as QuizQuestion;
+    return request<QuizQuestion>("/quiz_questions", { method: "POST", body: JSON.stringify(question) });
   },
 
   async updateQuestion(id: string, updates: Partial<QuizQuestion>) {
-    const { data, error } = await supabase
-      .from('quiz_questions')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as QuizQuestion;
+    return request<QuizQuestion>(`/quiz_questions/${id}`, { method: "PUT", body: JSON.stringify(updates) });
   },
 
   async deleteQuestion(id: string) {
-    const { error } = await supabase
-      .from('quiz_questions')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    await request<void>(`/quiz_questions/${id}`, { method: "DELETE" });
   },
 };
 
 export const quizAttemptsApi = {
   async getStudentAttempts(studentId: string, page = 0) {
-    const { data, error } = await supabase
-      .from('quiz_attempts')
-      .select('*, quiz:quizzes(*)')
-      .eq('student_id', studentId)
-      .order('completed_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data : [];
+    const data = await request<any[]>("/quiz_attempts");
+    return data.filter((item) => item.student_id === studentId).slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async getQuizAttempts(quizId: string, page = 0) {
-    const { data, error } = await supabase
-      .from('quiz_attempts')
-      .select('*, student:profiles(*)')
-      .eq('quiz_id', quizId)
-      .order('completed_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data : [];
+    const data = await request<any[]>("/quiz_attempts");
+    return data.filter((item) => item.quiz_id === quizId).slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async getAllAttempts(page = 0) {
-    const { data, error } = await supabase
-      .from('quiz_attempts')
-      .select('*, student:profiles(*), quiz:quizzes(*)')
-      .order('completed_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data : [];
+    const data = await request<any[]>("/quiz_attempts");
+    return data.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async createAttempt(attempt: Omit<QuizAttempt, 'id' | 'created_at' | 'completed_at'>) {
-    const { data, error } = await supabase
-      .from('quiz_attempts')
-      .insert(attempt)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as QuizAttempt;
+    return request<QuizAttempt>("/quiz_attempts", { method: "POST", body: JSON.stringify(attempt) });
   },
 };
 
 export const challengesApi = {
   async getAllChallenges() {
-    const { data, error } = await supabase
-      .from('challenges')
-      .select('*')
-      .eq('is_active', true)
-      .order('created_at', { ascending: true });
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as Challenge[] : [];
+    return request<Challenge[]>("/challenges");
   },
 
   async getChallenge(id: string) {
-    const { data, error } = await supabase
-      .from('challenges')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Challenge | null;
+    return request<Challenge | null>(`/challenges/${id}`);
   },
 
   async createChallenge(challenge: Omit<Challenge, 'id' | 'created_at'>) {
-    const { data, error } = await supabase
-      .from('challenges')
-      .insert(challenge)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Challenge;
+    return request<Challenge>("/challenges", { method: "POST", body: JSON.stringify(challenge) });
   },
 
   async updateChallenge(id: string, updates: Partial<Challenge>) {
-    const { data, error } = await supabase
-      .from('challenges')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as Challenge;
+    return request<Challenge>(`/challenges/${id}`, { method: "PUT", body: JSON.stringify(updates) });
   },
 };
 
 export const challengeProgressApi = {
   async getStudentProgress(studentId: string) {
-    const { data, error } = await supabase
-      .from('challenge_progress')
-      .select('*, challenge:challenges(*)')
-      .eq('student_id', studentId)
-      .order('updated_at', { ascending: false });
-
-    if (error) throw error;
-    return Array.isArray(data) ? data : [];
+    const data = await request<any[]>("/challenge_progress");
+    return data.filter((item) => item.student_id === studentId);
   },
 
   async getChallengeProgress(challengeId: string, studentId: string) {
-    const { data, error } = await supabase
-      .from('challenge_progress')
-      .select('*')
-      .eq('challenge_id', challengeId)
-      .eq('student_id', studentId)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as ChallengeProgress | null;
+    const data = await request<ChallengeProgress[]>("/challenge_progress");
+    return data.find((item) => item.challenge_id === challengeId && item.student_id === studentId) ?? null;
   },
 
   async getAllProgress(page = 0) {
-    const { data, error } = await supabase
-      .from('challenge_progress')
-      .select('*, student:profiles(*), challenge:challenges(*)')
-      .order('updated_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data : [];
+    const data = await request<any[]>("/challenge_progress");
+    return data.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async createOrUpdateProgress(progress: Omit<ChallengeProgress, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
-      .from('challenge_progress')
-      .upsert(progress, { onConflict: 'challenge_id,student_id' })
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as ChallengeProgress;
+    const existing = await this.getChallengeProgress(progress.challenge_id, progress.student_id);
+    if (existing) {
+      return request<ChallengeProgress>(`/challenge_progress/${existing.id}`, {
+        method: "PUT",
+        body: JSON.stringify(progress),
+      });
+    }
+    return request<ChallengeProgress>("/challenge_progress", { method: "POST", body: JSON.stringify(progress) });
   },
 };
 
 export const badgesApi = {
   async getAllBadges() {
-    const { data, error } = await supabase
-      .from('badges')
-      .select('*')
-      .order('points_required', { ascending: true });
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as Badge[] : [];
+    return request<Badge[]>("/badges");
   },
 
   async getUserBadges(userId: string) {
-    const { data, error } = await supabase
-      .from('user_badges')
-      .select('*, badge:badges(*)')
-      .eq('user_id', userId)
-      .order('earned_at', { ascending: false });
-
-    if (error) throw error;
-    return Array.isArray(data) ? data : [];
+    const data = await request<any[]>("/user_badges");
+    return data.filter((item) => item.user_id === userId);
   },
 
   async awardBadge(userId: string, badgeId: string) {
-    const { data, error } = await supabase
-      .from('user_badges')
-      .insert({ user_id: userId, badge_id: badgeId })
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as UserBadge;
+    return request<UserBadge>("/user_badges", {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId, badge_id: badgeId }),
+    });
   },
 };
 
 export const ecoActionsApi = {
   async getStudentActions(studentId: string, page = 0) {
-    const { data, error } = await supabase
-      .from('eco_actions')
-      .select('*')
-      .eq('student_id', studentId)
-      .order('submitted_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as EcoAction[] : [];
+    const data = await request<EcoAction[]>("/eco_actions");
+    return data.filter((item) => item.student_id === studentId).slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async getPendingActions(page = 0) {
-    const { data, error } = await supabase
-      .from('eco_actions')
-      .select('*, student:profiles!eco_actions_student_id_fkey(*)')
-      .eq('status', 'pending')
-      .order('submitted_at', { ascending: true })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as EcoActionWithDetails[] : [];
+    const data = await request<EcoActionWithDetails[]>("/eco_actions");
+    return data.filter((item) => item.status === "pending").slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async getAllActions(page = 0) {
-    const { data, error } = await supabase
-      .from('eco_actions')
-      .select('*, student:profiles!eco_actions_student_id_fkey(*), reviewer:profiles!eco_actions_reviewed_by_fkey(*)')
-      .order('submitted_at', { ascending: false })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as EcoActionWithDetails[] : [];
+    const data = await request<EcoActionWithDetails[]>("/eco_actions");
+    return data.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   },
 
   async createAction(action: Omit<EcoAction, 'id' | 'submitted_at' | 'reviewed_at' | 'status'>) {
-    const { data, error } = await supabase
-      .from('eco_actions')
-      .insert(action)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as EcoAction;
+    return request<EcoAction>("/eco_actions", { method: "POST", body: JSON.stringify(action) });
   },
 
   async updateAction(id: string, updates: Partial<EcoAction>) {
-    const { data, error } = await supabase
-      .from('eco_actions')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as EcoAction;
+    return request<EcoAction>(`/eco_actions/${id}`, { method: "PUT", body: JSON.stringify(updates) });
   },
 
   async reviewAction(id: string, status: 'approved' | 'rejected', reviewedBy: string, reviewNotes?: string) {
-    const { data, error } = await supabase
-      .from('eco_actions')
-      .update({
+    return request<EcoAction>(`/eco_actions/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({
         status,
         reviewed_by: reviewedBy,
         review_notes: reviewNotes,
         reviewed_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as EcoAction;
+      }),
+    });
   },
 };
 
 export const leaderboardApi = {
   async getLeaderboard(page = 0) {
-    const { data, error } = await supabase
-      .from('leaderboard')
-      .select('*')
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-    if (error) throw error;
-    return Array.isArray(data) ? data as LeaderboardEntry[] : [];
+    const profiles = await request<Profile[]>("/profiles");
+    return profiles
+      .sort((a, b) => b.total_points - a.total_points)
+      .map((profile, index) => ({ ...profile, badge_count: 0, rank: index + 1 })) as LeaderboardEntry[];
   },
 
   async getUserRank(userId: string) {
-    const { data, error } = await supabase
-      .from('leaderboard')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data as LeaderboardEntry | null;
+    const leaderboard = await this.getLeaderboard(0);
+    return leaderboard.find((entry) => entry.id === userId) ?? null;
   },
 };
 
 export const storageApi = {
   async uploadEcoActionImage(file: File, userId: string): Promise<string> {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/${Date.now()}.${fileExt}`;
-
-    const { data, error } = await supabase.storage
-      .from('app-86rk82r38p35_eco_actions')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
-
-    if (error) throw error;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('app-86rk82r38p35_eco_actions')
-      .getPublicUrl(data.path);
-
-    return publicUrl;
+    const token = authStore.getToken();
+    const form = new FormData();
+    form.append("file", file);
+    form.append("userId", userId);
+    const response = await fetch(`${API_BASE}/uploads/eco-actions`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    if (!response.ok) throw new Error("Upload failed");
+    const data = await response.json();
+    return `${import.meta.env.VITE_API_ORIGIN || "http://localhost:4000"}${data.url}`;
   },
 
   async deleteEcoActionImage(url: string) {
-    const path = url.split('/').slice(-2).join('/');
-
-    const { error } = await supabase.storage
-      .from('app-86rk82r38p35_eco_actions')
-      .remove([path]);
-
-    if (error) throw error;
+    void url;
   },
 };

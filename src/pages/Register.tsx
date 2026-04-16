@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '@/db/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,26 +49,20 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const authEmail = `${username}@miaoda.com`;
-
-      const { data, error } = await supabase.auth.signUp({
-        email: authEmail,
-        password,
-        options: {
-          data: {
-            username,
-            full_name: email,
-            role,
-          },
-        },
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          role,
+          full_name: email,
+        }),
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        toast.success('Registration successful! Please sign in.');
-        navigate('/login');
-      }
+      if (!response.ok) throw new Error('Registration failed');
+      toast.success('Registration successful! Please sign in.');
+      navigate('/login');
     } catch (error: unknown) {
       console.error('Registration error:', error);
       if (error instanceof Error) {

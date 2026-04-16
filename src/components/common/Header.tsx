@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '@/db/supabase';
 import { profilesApi } from '@/db/api';
+import { authStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -18,18 +18,6 @@ export default function Header() {
 
   useEffect(() => {
     loadProfile();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
-        loadProfile();
-      } else if (event === 'SIGNED_OUT') {
-        setProfile(null);
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
   }, []);
 
   const loadProfile = async () => {
@@ -45,7 +33,8 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      authStore.clearSession();
+      setProfile(null);
       toast.success('Logged out successfully');
       navigate('/login');
     } catch (error) {

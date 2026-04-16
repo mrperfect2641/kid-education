@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/db/supabase';
 import { profilesApi } from '@/db/api';
+import { authStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,20 +31,21 @@ export default function AdminLogin() {
         setLoading(true);
 
         try {
-            const email = `${username}@miaoda.com`;
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000/api'}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
             });
+            if (!response.ok) throw new Error('Login failed');
+            const { token, user } = await response.json();
+            authStore.setSession(token, user);
 
-            if (error) throw error;
-
-            if (data.user) {
-                const profile = await profilesApi.getProfile(data.user.id);
+            if (user) {
+                const profile = await profilesApi.getProfile(user.id);
 
                 if (!profile) {
                     toast.error('Profile not found. Please contact administrator.');
-                    await supabase.auth.signOut();
+                    authStore.clearSession();
                     setLoading(false);
                     return;
                 }
@@ -52,7 +53,7 @@ export default function AdminLogin() {
                 // Strictly check if the user is an admin
                 if (profile.role !== 'admin') {
                     toast.error('Access denied. Administrator privileges required.');
-                    await supabase.auth.signOut();
+                    authStore.clearSession();
                     setLoading(false);
                     return;
                 }
