@@ -117,6 +117,21 @@ export default function TeacherDashboard() {
     }
   };
 
+  const handleDeleteChallenge = async (challengeId: string) => {
+    if (!confirm('Are you sure you want to delete this game?')) {
+      return;
+    }
+
+    try {
+      await challengesApi.deleteChallenge(challengeId);
+      toast.success('Game deleted successfully');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      toast.error('Failed to delete game');
+    }
+  };
+
   const handleReviewEcoAction = async (actionId: string, status: 'approved' | 'rejected', reviewNotes?: string) => {
     try {
       const user = await profilesApi.getCurrentUser();
@@ -462,6 +477,13 @@ ${pendingActions.slice(0, 5).map((action: any, i: number) =>
                                 <Link to={`/challenge/${challenge.id}`}>
                                   <Edit className="w-4 h-4" />
                                 </Link>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteChallenge(challenge.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
                           </TableCell>

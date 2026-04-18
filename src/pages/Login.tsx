@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { profilesApi } from '@/db/api';
 import { authStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,43 +38,45 @@ export default function Login() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      if (!response.ok) throw new Error('Login failed');
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+      
       const { token, user } = await response.json();
+      
+      if (!user) {
+        toast.error('Failed to login. No user data returned.');
+        return;
+      }
+
+      // Check if selected role matches registered role
+      if (user.role !== selectedRole) {
+        const article = user.role === 'admin' ? 'an' : 'a';
+        toast.error(`This account is registered as ${article} ${user.role}. Please select "${user.role}" to login.`);
+        return;
+      }
+
+      // Store session after all validation passes
       authStore.setSession(token, user);
+      toast.success(`Welcome back, ${user.username}!`);
 
-      if (user) {
-        const profile = await profilesApi.getProfile(user.id);
-
-        if (!profile) {
-          toast.error('Profile not found. Please contact administrator.');
-          authStore.clearSession();
-          setLoading(false);
-          return;
-        }
-
-        // Check if selected role matches registered role
-        if (profile.role !== selectedRole) {
-          const article = profile.role === 'admin' ? 'an' : 'a';
-          toast.error(`This account is registered as ${article} ${profile.role}. Please select "${profile.role}" to login.`);
-          authStore.clearSession();
-          setLoading(false);
-          return;
-        }
-
-        toast.success(`Welcome back, ${profile.username}!`);
-
-        // Route based on the selected role (which matches registered role)
-        if (selectedRole === 'admin') {
-          navigate('/admin');
-        } else if (selectedRole === 'teacher') {
-          navigate('/teacher');
-        } else {
-          navigate('/');
-        }
+      // Route based on the selected role (which matches registered role)
+      if (selectedRole === 'admin') {
+        navigate('/admin');
+      } else if (selectedRole === 'teacher') {
+        navigate('/teacher');
+      } else {
+        navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Invalid username or password');
+      if (error instanceof Error) {
+        toast.error(error.message || 'Login failed. Please try again.');
+      } else {
+        toast.error('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

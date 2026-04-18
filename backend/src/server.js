@@ -97,28 +97,54 @@ const requireRole = (...roles) => (req, res, next) => {
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 app.post("/api/auth/register", async (req, res) => {
-  const { username, email, password, role = "student", full_name } = req.body;
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({
-    data: {
-      username,
-      email,
-      passwordHash,
-      fullName: full_name ?? null,
-      role: String(role).toUpperCase(),
-    },
-  });
-  return res.status(201).json({ user: toClientUser(user) });
+  try {
+    const { username, email, password, role = "student", full_name } = req.body;
+    
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        passwordHash,
+        fullName: full_name ?? null,
+        role: String(role).toUpperCase(),
+      },
+    });
+    return res.status(201).json({ user: toClientUser(user) });
+  } catch (error) {
+    if (error.code === "P2002") {
+      const field = error.meta?.target?.[0] || "username";
+      return res.status(409).json({ message: `${field} already exists` });
+    }
+    console.error("Register error:", error);
+    return res.status(500).json({ message: "Registration failed" });
+  }
 });
 
 app.post("/api/auth/login", async (req, res) => {
-  const { username, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { username } });
-  if (!user) return res.status(401).json({ message: "Invalid credentials" });
-  const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) return res.status(401).json({ message: "Invalid credentials" });
-  const token = jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, { expiresIn: "12h" });
-  return res.json({ token, user: toClientUser(user) });
+  try {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ message: "Missing username or password" });
+    }
+    
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) return res.status(401).json({ message: "Invalid credentials" });
+    
+    const token = jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, { expiresIn: "12h" });
+    return res.json({ token, user: toClientUser(user) });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Login failed" });
+  }
 });
 
 app.get("/api/auth/me", auth, async (req, res) => {
@@ -181,8 +207,19 @@ app.put("/api/:resource/:id", auth, async (req, res) => {
 app.delete("/api/:resource/:id", auth, async (req, res) => {
   const delegateName = modelMap[req.params.resource];
   if (!delegateName) return res.status(404).json({ message: "Unknown resource" });
-  await prisma[delegateName].delete({ where: { id: req.params.id } });
-  return res.status(204).send();
+  try {
+    await prisma[delegateName].delete({ where: { id: req.params.id } });
+    return res.status(204).send();
+  } catch (error) {
+    console.error("Delete error:", error);
+    return res.status(500).json({ message: "Failed to delete resource" });
+  }
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ message: "Internal server error" });
 });
 
 app.listen(PORT, () => {

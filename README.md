@@ -82,14 +82,21 @@ Alternatively, use the official installer: Visit the Node.js official website. D
 # Step 1: Download the code package
 # Step 2: Extract the code package
 # Step 3: Open the code package with your IDE and navigate into the code directory
-# Step 4: In the IDE terminal, run the command to install dependencies: npm i
-# Step 5: In the IDE terminal, run the command to start the development server: npm run dev -- --host 127.0.0.1
-# Step 6: if step 5 failed, try this command to start the development server: npx vite --host 127.0.0.1
+# Step 4: In the IDE terminal, run the command to install dependencies: pnpm install
+# Step 5: In the IDE terminal, run the command to start the development server: npx vite --host 127.0.0.1
 ```
 
 ### How to develop backend services?
 
-Configure environment variables and install relevant dependencies.If you need to use a database, please use the official version of Supabase.
+Configure environment variables and install relevant dependencies. To run the backend:
+
+```
+cd backend
+pnpm install
+pnpm run dev
+```
+
+If you need to use a database, please use the official version of Supabase.
 
 ## Learn More
 

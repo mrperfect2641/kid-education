@@ -201,6 +201,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteQuiz = async (quizId: string) => {
+    if (!confirm('Are you sure you want to delete this quiz?')) {
+      return;
+    }
+
+    try {
+      await quizzesApi.deleteQuiz(quizId);
+      toast.success('Quiz deleted successfully');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting quiz:', error);
+      toast.error('Failed to delete quiz');
+    }
+  };
+
+  const handleDeleteChallenge = async (challengeId: string) => {
+    if (!confirm('Are you sure you want to delete this game?')) {
+      return;
+    }
+
+    try {
+      await challengesApi.deleteChallenge(challengeId);
+      toast.success('Game deleted successfully');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      toast.error('Failed to delete game');
+    }
+  };
+
   const handleReviewEcoAction = async (actionId: string, status: 'approved' | 'rejected', reviewNotes?: string) => {
     try {
       const user = await profilesApi.getCurrentUser();
@@ -645,6 +675,13 @@ DATABASE INTEGRITY CHECK:
                                   <Edit className="w-4 h-4" />
                                 </Link>
                               </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteQuiz(quiz.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -698,6 +735,13 @@ DATABASE INTEGRITY CHECK:
                                 <Link to={`/challenge/${challenge.id}`}>
                                   <Edit className="w-4 h-4" />
                                 </Link>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteChallenge(challenge.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
                           </TableCell>

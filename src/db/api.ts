@@ -168,6 +168,10 @@ export const challengesApi = {
   async updateChallenge(id: string, updates: Partial<Challenge>) {
     return request<Challenge>(`/challenges/${id}`, { method: "PUT", body: JSON.stringify(updates) });
   },
+
+  async deleteChallenge(id: string) {
+    await request<void>(`/challenges/${id}`, { method: "DELETE" });
+  },
 };
 
 export const challengeProgressApi = {

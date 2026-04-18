@@ -8,7 +8,9 @@
     "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "node prisma/seed.js"
+    "prisma:seed": "node prisma/seed.js",
+    "prisma:seed-quizzes": "node prisma/seedQuizzes.js",
+    "prisma:seed-games": "node prisma/seedGames.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
